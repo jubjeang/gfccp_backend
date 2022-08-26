@@ -3,8 +3,14 @@ class gfccp_order{
         ,customer_type
         ,branch_code
         ,branch_name
+        ,branchorigin_code
+        ,branchorigin_name
+        ,branchdest_code
+        ,branchdest_name
+        ,refno
+        ,input_type
         ,CustomerID
-        ,Servicetype
+        ,servicetype
         ,note_new_1000
         ,note_new_500
         ,note_new_100
@@ -35,6 +41,8 @@ class gfccp_order{
         ,remark
         ,total_by_branch
         ,attach_file
+        ,attach_file_origin
+        ,unit
         ,createdate
         ,createby
         ,modifydate
@@ -43,7 +51,13 @@ class gfccp_order{
             this.customer_no = customer_no; 
             this.customer_type = customer_type; 
             this.branch_code = branch_code; 
-            this.branch_name = branch_name; 
+            this.branch_name = branch_name;
+            this.branchorigin_code = branchorigin_code;
+            this.branchorigin_name = branchorigin_name;
+            this.branchdest_code = branchdest_code;
+            this.branchdest_name = branchdest_name;
+            this.refno = refno;
+            this.input_type = input_type;
             this.customerID = customerID;
             this.servicetype = servicetype;
             this.note_new_1000 = note_new_1000;
@@ -76,6 +90,8 @@ class gfccp_order{
             this.remark = remark;
             this.total_by_branch = total_by_branch;
             this.attach_file = attach_file;
+            this.attach_file_origin = attach_file_origin;
+            this.unit = unit        
             this.createdate = createdate;
             this.createby = createby;
             this.modifydate = modifydate;
