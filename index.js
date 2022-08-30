@@ -247,6 +247,16 @@ app.get('/orderlist', (req, res) => {
         }
     })
 })
+app.get('/ordertrackinglist', (req, res) => {
+    dboperations.getOrdertrackinglist().then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
 app.get('/getbranchdata', (req, res) => {
     dboperations.getBranchData().then((result, err) => {
         if (err) {
@@ -267,20 +277,17 @@ app.get('/getcashcenterdata', (req, res) => {
         }
     })
 })
-
 // create application/x-www-form-urlencoded parser
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.post('/manual_add_order', urlencodedParser, (req, res) => {
     let data_ = req.body
-    let i = 0;
     let obj = null
     for (let x in data_) {
         obj = x
     }
-    let obj_json = JSON.parse(obj)
-    //console.log(obj_json);
-    let data_header = {
+    let obj_json = JSON.parse(obj)    
+    let data_all = {
         'customerID': '899704cb-5844-4f97-93bc-880e288e4d1c',
         'order_category': obj_json['OrderCategoryNew'],
         'servicetype': obj_json['OrderTypeNew'],
@@ -290,110 +297,54 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
         //'branchdest_code': obj_json['branchdest_code'],
         'branchdest_name': obj_json['BranchDest'],
         'remark': obj_json['RemarkNew'],
+        'user_id': obj_json['user_id'],
     }
-    data_det = []
     let AllRowsDet = parseInt(obj_json['AllRowsDet'])
     for (var index = 1; index <= AllRowsDet; index++) {
-        //------------------------------------
-        let ddlMoneyTypeName_ = 'ddlMoneyType' + index
+        //------------------------------------        
         let ddlMoneyTypeValue_ = obj_json['ddlMoneyType' + index]
-
-        let ddlQualityMoneyTypeName_ = 'ddlQualityMoneyType' + index
-        let ddlQualityMoneyTypeValue_ = obj_json['ddlQualityMoneyType' + index]
-
-        let ddlPackageMoneyTypeName_ = 'ddlPackageMoneyType' + index
+        let ddlQualityMoneyTypeValue_ = obj_json['ddlQualityMoneyType' + index]        
         let ddlPackageMoneyTypeValue_ = obj_json['ddlPackageMoneyType' + index]
-
-        let tbQuantityName_ = 'tbQuantity' + index
-        let tbQuantityeValue_ = obj_json['tbQuantity' + index]
-
-        let tbAmountName_ = 'tbAmount' + index
-        let tbAmountValue_ = obj_json['tbAmount' + index]
-        let my_object_data = {}
+        let tbAmountValue_ = obj_json['tbAmount' + index]        
         //------------------------------
         switch (ddlQualityMoneyTypeValue_) {
             case 'New':
                 switch (ddlMoneyTypeValue_) {
                     case '1000':
-                        my_object_data = {
-                            note_new_1000: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_new_1000=tbAmountValue_
-                        //data_header.unit=ddlPackageMoneyTypeValue_
+                        data_all.note_new_1000=tbAmountValue_                        
                         break;
                     case '500':
-                        my_object_data = {
-                            note_new_500: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_new_500=tbAmountValue_
+                        data_all.note_new_500=tbAmountValue_
                         break;
                     case '100':
-                        my_object_data = {
-                            note_new_100: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_new_100=tbAmountValue_
+                        data_all.note_new_100=tbAmountValue_
                         break;
                     case '20':
-                        my_object_data = {
-                            note_new_20: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_new_20=tbAmountValue_
+                        data_all.note_new_20=tbAmountValue_
                         break;
                     case '10':
                         switch (ddlPackageMoneyTypeValue_) {
                             case 'Coin':
-                                my_object_data = {
-                                    coin_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.coin_10=tbAmountValue_
+                                data_all.coin_10=tbAmountValue_
                                 break;
                             default:
-                                my_object_data = {
-                                    note_new_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.note_new_10=tbAmountValue_
+                                data_all.note_new_10=tbAmountValue_
                         }
                         break;
                     case '5':
-                        my_object_data = {
-                            coin_5: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_5=tbAmountValue_
+                        data_all.coin_5=tbAmountValue_
                         break;
                     case '2':
-                        my_object_data = {
-                            coin_2: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_2=tbAmountValue_
+                        data_all.coin_2=tbAmountValue_
                         break;
                     case '1':
-                        my_object_data = {
-                            coin_1: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_1=tbAmountValue_
+                        data_all.coin_1=tbAmountValue_
                         break;
                     case '0.5':
-                        my_object_data = {
-                            coin_05: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_05=tbAmountValue_
+                        data_all.coin_05=tbAmountValue_
                         break;
                     case '0.25':
-                        my_object_data = {
-                            coin_025: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_025=tbAmountValue_
+                        data_all.coin_025=tbAmountValue_
                         break;
                     default:
                         console.log(`Sorry, we are out of ${ddlQualityMoneyTypeValue_}.`);
@@ -402,84 +353,40 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
             case 'Good':
                 switch (ddlMoneyTypeValue_) {
                     case '1000':
-                        my_object_data = {
-                            note_good_1000: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_good_1000=tbAmountValue_
+                        data_all.note_good_1000=tbAmountValue_
                         break;
                     case '500':
-                        my_object_data = {
-                            note_good_500: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_good_500=tbAmountValue_
+                        data_all.note_good_500=tbAmountValue_
                         break;
                     case '100':
-                        my_object_data = {
-                            note_good_100: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_good_100=tbAmountValue_
+                        data_all.note_good_100=tbAmountValue_
                         break;
                     case '20':
-                        my_object_data = {
-                            note_good_20: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_good_20=tbAmountValue_
+                        data_all.note_good_20=tbAmountValue_
                         break;
                     case '10':
                         switch (ddlPackageMoneyTypeValue_) {
                             case 'Coin':
-                                my_object_data = {
-                                    coin_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.coin_10=tbAmountValue_
+                                data_all.coin_10=tbAmountValue_
                                 break;
                             default:
-                                my_object_data = {
-                                    note_good_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.note_good_10=tbAmountValue_
+                                data_all.note_good_10=tbAmountValue_
                         }
                         break;
                     case '5':
-                        my_object_data = {
-                            coin_5: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_5=tbAmountValue_
+                        data_all.coin_5=tbAmountValue_
                         break;
                     case '2':
-                        my_object_data = {
-                            coin_2: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_2=tbAmountValue_
+                        data_all.coin_2=tbAmountValue_
                         break;
                     case '1':
-                        my_object_data = {
-                            coin_1: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_1=tbAmountValue_
+                        data_all.coin_1=tbAmountValue_
                         break;
                     case '0.5':
-                        my_object_data = {
-                            coin_05: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_05=tbAmountValue_
+                        data_all.coin_05=tbAmountValue_
                         break;
                     case '0.25':
-                        my_object_data = {
-                            coin_025: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_025=tbAmountValue_
+                        data_all.coin_025=tbAmountValue_
                         break;
                     default:
                         console.log(`Sorry, we are out of ${ddlQualityMoneyTypeValue_}.`);
@@ -488,84 +395,40 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
             case 'Unsort':
                 switch (ddlMoneyTypeValue_) {
                     case '1000':
-                        my_object_data = {
-                            note_counting_1000: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_counting_1000=tbAmountValue_
+                        data_all.note_counting_1000=tbAmountValue_
                         break;
                     case '500':
-                        my_object_data = {
-                            note_counting_500: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_counting_500=tbAmountValue_
+                        data_all.note_counting_500=tbAmountValue_
                         break;
                     case '100':
-                        my_object_data = {
-                            note_counting_100: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_counting_100=tbAmountValue_
+                        data_all.note_counting_100=tbAmountValue_
                         break;
                     case '20':
-                        my_object_data = {
-                            note_counting_20: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.note_counting_20=tbAmountValue_
+                        data_all.note_counting_20=tbAmountValue_
                         break;
                     case '10':
                         switch (ddlPackageMoneyTypeValue_) {
                             case 'Coin':
-                                my_object_data = {
-                                    coin_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.coin_10=tbAmountValue_
+                                data_all.coin_10=tbAmountValue_
                                 break;
                             default:
-                                my_object_data = {
-                                    note_counting_10: tbAmountValue_,
-                                    unit: ddlPackageMoneyTypeValue_,
-                                }
-                                data_header.note_counting_10=tbAmountValue_
+                                data_all.note_counting_10=tbAmountValue_
                         }
                         break;
                     case '5':
-                        my_object_data = {
-                            coin_5: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_5=tbAmountValue_
+                        data_all.coin_5=tbAmountValue_
                         break;
                     case '2':
-                        my_object_data = {
-                            coin_2: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_2=tbAmountValue_
+                        data_all.coin_2=tbAmountValue_
                         break;
                     case '1':
-                        my_object_data = {
-                            coin_1: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_1=tbAmountValue_
+                        data_all.coin_1=tbAmountValue_
                         break;
                     case '0.5':
-                        my_object_data = {
-                            coin_05: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_05=tbAmountValue_
+                        data_all.coin_05=tbAmountValue_
                         break;
                     case '0.25':
-                        my_object_data = {
-                            coin_025: tbAmountValue_,
-                            unit: ddlPackageMoneyTypeValue_,
-                        }
-                        data_header.coin_025=tbAmountValue_
+                        data_all.coin_025=tbAmountValue_
                         break;
                     default:
                         console.log(`Sorry, we are out of ${ddlQualityMoneyTypeValue_}.`);
@@ -575,25 +438,14 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
                 console.log(`Sorry, we are out of ${ddlQualityMoneyTypeValue_}.`);
         }//switch (ddlQualityMoneyTypeValue_) {
         //------------------------------
-        // let my_object = {
-        //     ddlMoneyTypeName_: ddlMoneyTypeValue_,
-        //     ddlQualityMoneyTypeName_: ddlQualityMoneyTypeValue_,
-        //     ddlPackageMoneyTypeName_: ddlPackageMoneyTypeValue_,
-        //     tbQuantityName_: tbQuantityeValue_,
-        //     tbAmountName_: tbAmountValue_
-        // };
-        // data_det.push(my_object)
-        data_det.push(my_object_data)
     }
-    let data_det_json = JSON.stringify(data_det)
-    console.log( data_header )
-    // console.log(JSON.parse(data_det_json))
-    dboperations.add_manual_order( data_header ).then((result, err) => {
+    console.log( data_all )
+    dboperations.add_manual_order( data_all ).then((result, err) => {
         if (err) {
             console.log(err)
         }
         else {
-            res.json(result[0])
+            res.json(result[0]) 
         }
     })
 })
@@ -618,4 +470,3 @@ const checkvalue = (value_, type_) => {
     }
     return returnValue
 }
-

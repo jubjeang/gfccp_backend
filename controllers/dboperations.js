@@ -23,6 +23,18 @@ async function getCashCenterData() {
         console.log(error);
     }
 }
+async function getOrdertrackinglist() {
+    try {
+        let pool = await sql.connect(config);
+
+        let products = await pool.request().query("select c.AutoID,c.TaskId,c.CustomerID,c.CIT_Type,c.[date],c.route_name,c.CL_name,c.CD_name,c.cct_code,c.cct_branch,b.branch_name  from [dbo].[CIT_status_orderCCP] c inner join T_CCT_Monthly_Branch b on c.TaskId=b.TaskId where c.[date]='2022-08-22' and c.CustomerID='2c164463-ef08-4cb6-a200-08e70aece9ae' and c.cct_code='01' and c.route_name='Bangkok-CIT-09'  order by AutoID;");
+        // let products = await pool.request().query("select * from gfccp_order where branch_name<>'ยอดรวม' order by AutoID;");
+        return products.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 async function getOrdersList() {
     try {
         let pool = await sql.connect(config);
@@ -126,36 +138,88 @@ async function add_gfccp_order_withdraw(gfccp_order) {
 }
 async function add_manual_order(gfccp_order)
 {
-    try {
-        let pool = await sql.connect(config);
-        // Object.keys(gfccp_order).forEach(function(key) {
-        //     console.log('Key : ' + key + ', Value : ' + gfccp_order[key])
-        //     console.log('typeof Key : ' + (typeof key) + ', typeof Value : ' + (typeof gfccp_order[key] ) )
-        //   })
-        // return gfccp_order
-        var add_manual_order = await pool.request()
-        Object.keys(gfccp_order).forEach(function(key) { 
-            let key_ = key
-            let value_ = gfccp_order[key]
-            if( ( key_.substr(0, 4) ==='note' ) || ( key_.substr(0, 4) === 'coin' ) ){
-                //console.log('Key : ' + key + ', Value : ' + gfccp_order[key])
-                add_manual_order.input(key_, sql.Float, value_)
-            }
-            else if( key_ ==='order_date' )
-            {
-                add_manual_order.input(key_, sql.DateTime, value_)
-            }
-            else{
-                add_manual_order.input(key_, sql.NVarChar, value_)
-            }
-        })
-        add_manual_order.execute('add_manual_order')        
-        console.log( add_manual_order )
-        return gfccp_order//add_manual_order.recordsets
-    }
-    catch (err) {
-        console.log(err);
-    }
+        let NULL_ = "NULL"
+        let FLOAT_NULL_ = 0
+        let customerID = gfccp_order["customerID"]
+        let order_category = gfccp_order["order_category"]
+        let servicetype = gfccp_order["servicetype"]        
+        let refno = gfccp_order["refno"] !== undefined ? gfccp_order["refno"] : NULL_
+        let order_date = gfccp_order["order_date"]
+        let branchorigin_name = gfccp_order["branchorigin_name"]
+        let branchdest_name = gfccp_order["branchdest_name"]
+        let remark = gfccp_order["remark"] !== undefined ? gfccp_order["remark"] : NULL_
+        let note_new_1000 = gfccp_order["note_new_1000"] !== undefined ? parseFloat( gfccp_order["note_new_1000"] ) : FLOAT_NULL_
+        let note_new_500 = gfccp_order["note_new_500"] !== undefined ? parseFloat( gfccp_order["note_new_500"] ) : FLOAT_NULL_
+        let note_new_100 = gfccp_order["note_new_100"] !== undefined ? parseFloat( gfccp_order["note_new_100"] ) : FLOAT_NULL_
+        let note_new_50 = gfccp_order["note_new_50"] !== undefined ? parseFloat( gfccp_order["note_new_50"] ) : FLOAT_NULL_
+        let note_new_20 = gfccp_order["note_new_20"] !== undefined ? parseFloat( gfccp_order["note_new_20"] ) : FLOAT_NULL_
+        let note_new_10 = gfccp_order["note_new_10"] !== undefined ? parseFloat( gfccp_order["note_new_10"] ) : FLOAT_NULL_
+        let note_good_1000 = gfccp_order["note_good_1000"] !== undefined ? parseFloat( gfccp_order["note_good_1000"] ) : FLOAT_NULL_
+        let note_good_500 = gfccp_order["note_good_500"] !== undefined ? parseFloat( gfccp_order["note_good_500"] ) : FLOAT_NULL_
+        let note_good_100 = gfccp_order["note_good_100"] !== undefined ? parseFloat( gfccp_order["note_good_100"] ) : FLOAT_NULL_
+        let note_good_50 = gfccp_order["note_good_50"] !== undefined ? parseFloat( gfccp_order["note_good_50"] ) : FLOAT_NULL_
+        let note_good_20 = gfccp_order["note_good_20"] !== undefined ? parseFloat( gfccp_order["note_good_20"] ) : FLOAT_NULL_
+        let note_good_10 = gfccp_order["note_good_10"] !== undefined ? parseFloat( gfccp_order["note_good_10"] ) : FLOAT_NULL_
+        let note_counting_1000 = gfccp_order["note_counting_1000"] !== undefined ? parseFloat( gfccp_order["note_counting_1000"] ) : FLOAT_NULL_
+        let note_counting_500 = gfccp_order["note_counting_500"] !== undefined ? parseFloat( gfccp_order["note_counting_500"] ) : FLOAT_NULL_
+        let note_counting_100 = gfccp_order["note_counting_100"] !== undefined ? parseFloat( gfccp_order["note_counting_100"] ) : FLOAT_NULL_
+        let note_counting_50 = gfccp_order["note_counting_50"] !== undefined ? parseFloat( gfccp_order["note_counting_50"] ) : FLOAT_NULL_
+        let note_counting_20 = gfccp_order["note_counting_20"] !== undefined ? parseFloat( gfccp_order["note_counting_20"] ) : FLOAT_NULL_
+        let note_counting_10 = gfccp_order["note_counting_10"] !== undefined ? parseFloat( gfccp_order["note_counting_10"] ) : FLOAT_NULL_
+        let coin_10 = gfccp_order["coin_10"] !== undefined ? parseFloat( gfccp_order["coin_10"] ) : FLOAT_NULL_
+        let coin_5 = gfccp_order["coin_5"] !== undefined ? parseFloat( gfccp_order["coin_5"] ) : FLOAT_NULL_
+        let coin_2 = gfccp_order["coin_2"] !== undefined ? parseFloat( gfccp_order["coin_1"] ) : FLOAT_NULL_
+        let coin_1 = gfccp_order["coin_1"] !== undefined ? parseFloat( gfccp_order["coin_1"] ) : FLOAT_NULL_
+        let coin_05 = gfccp_order["coin_05"] !== undefined ? parseFloat( gfccp_order["coin_05"] ) : FLOAT_NULL_
+        let coin_025 = gfccp_order["coin_025"] !== undefined ? parseFloat( gfccp_order["coin_025"] ) : FLOAT_NULL_
+        let row_type = 'normal'
+        let input_type = 'manual_add'
+        let user_id = gfccp_order["user_id"]
+        try {
+            let pool = await sql.connect(config);
+            let add_manual_order = await pool.request()
+                .input('customerID', sql.NVarChar, customerID)
+                .input('order_category', sql.NVarChar, order_category)
+                .input('servicetype', sql.NVarChar, servicetype)
+                .input('refno', sql.NVarChar, refno)
+                .input('order_date', sql.DateTime, order_date)
+                .input('branchorigin_name', sql.NVarChar, branchorigin_name)
+                .input('branchdest_name', sql.NVarChar, branchdest_name)                
+                .input('remark', sql.NVarChar, remark)
+                .input('note_new_1000', sql.Float, note_new_1000)
+                .input('note_new_500', sql.Float, note_new_500)
+                .input('note_new_100', sql.Float, note_new_100)
+                .input('note_new_50', sql.Float, note_new_50)
+                .input('note_new_20', sql.Float, note_new_20)
+                .input('note_new_10', sql.Float, note_new_10)
+                .input('note_good_1000', sql.Float, note_good_1000)
+                .input('note_good_500', sql.Float, note_good_500)
+                .input('note_good_100', sql.Float, note_good_100)
+                .input('note_good_50', sql.Float, note_good_50)
+                .input('note_good_20', sql.Float, note_good_20)
+                .input('note_good_10', sql.Float, note_good_10)
+                .input('note_counting_1000', sql.Float, note_counting_1000)
+                .input('note_counting_500', sql.Float, note_counting_500)
+                .input('note_counting_100', sql.Float, note_counting_100)
+                .input('note_counting_50', sql.Float, note_counting_50)
+                .input('note_counting_20', sql.Float, note_counting_20)
+                .input('note_counting_10', sql.Float, note_counting_10)
+                .input('coin_10', sql.Float, coin_10)
+                .input('coin_5', sql.Float, coin_5)
+                .input('coin_2', sql.Float, coin_2)
+                .input('coin_1', sql.Float, coin_1)
+                .input('coin_05', sql.Float, coin_05)
+                .input('coin_025', sql.Float, coin_025)
+                .input('row_type', sql.NVarChar, row_type)
+                .input('input_type', sql.NVarChar, input_type)
+                .input('createby', sql.NVarChar, user_id)
+                .execute('add_manual_order');
+            return add_manual_order.recordsets;
+        }
+        catch (err) {
+            console.log(err);
+        }
+        return add_manual_order.recordsets   
 }
 module.exports = {
     getOrdersList: getOrdersList,
@@ -164,5 +228,6 @@ module.exports = {
     add_gfccp_order_withdraw : add_gfccp_order_withdraw,
     getBranchData : getBranchData,
     getCashCenterData : getCashCenterData,
-    add_manual_order : add_manual_order
+    add_manual_order : add_manual_order,
+    getOrdertrackinglist : getOrdertrackinglist 
 }
