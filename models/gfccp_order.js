@@ -9,7 +9,7 @@ class gfccp_order {
         , branchdest_name
         , refno
         , input_type
-        , CustomerID
+        , customerID
         , servicetype
 
         , note_new_1000
@@ -360,10 +360,6 @@ class gfccp_order {
         this.pcs_coin_uncount_1 = pcs_coin_uncount_1;
         this.pcs_coin_uncount_05 = pcs_coin_uncount_05;
         this.pcs_coin_uncount_025 = pcs_coin_uncount_025;
-
-
-
-
         //------------------------------
         this.row_amount_manual = row_amount_manual;
         this.order_date = order_date;
