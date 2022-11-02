@@ -27,6 +27,19 @@ async function getBankTypeData(userID) {
         console.log(error);
     }
 }
+async function getCCT_Data(CustomerID,user_id) {
+    try {
+        let pool = await sql.connect(config);
+        let spGetCCT_Data = await pool.request() 
+        .input('CustomerID', sql.NVarChar, CustomerID)       
+        .input('user_id', sql.Int, user_id)
+        .execute("spGetCCT_Data");           
+        return spGetCCT_Data.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 async function getDownloadLink(userID) {
     try {
         let pool = await sql.connect(config);
@@ -375,86 +388,86 @@ async function manual_add_order(gfccp_order, type_) {
         console.log(err);
     }
 }
-async function add_gfccp_order_deposit(gfccp_order) {
-    try {
-        let pool = await sql.connect(config);
-        let add_gfccp_order_deposit = await pool.request()
-            .input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
-            .input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
-            .input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
-            .input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
-            .input('note_uncount_1000', sql.Float, gfccp_order.note_uncount_1000)
-            .input('note_uncount_500', sql.Float, gfccp_order.note_uncount_500)
-            .input('note_uncount_100', sql.Float, gfccp_order.note_uncount_100)
-            .input('note_uncount_50', sql.Float, gfccp_order.note_uncount_50)
-            .input('note_uncount_20', sql.Float, gfccp_order.note_uncount_20)
-            .input('note_uncount_10', sql.Float, gfccp_order.note_uncount_10)
-            .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
-            .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
-            .input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
-            .input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
-            .input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
-            .input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
-            .input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
-            .input('remark', sql.NVarChar, gfccp_order.remark)
-            .input('order_date', sql.DateTime, gfccp_order.order_date)
-            .input('order_category', sql.NVarChar, gfccp_order.order_category)
-            .input('servicetype', sql.NVarChar, gfccp_order.servicetype)
-            .input('customer_no', sql.NVarChar, gfccp_order.customer_no)
-            .input('row_type', sql.NVarChar, gfccp_order.row_type)
-            .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
-            .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
-            .input('createby', sql.NVarChar, gfccp_order.createby)
-            .execute('add_gfccp_order_deposit');
-        return add_gfccp_order_deposit.recordsets;
-    }
-    catch (err) {
-        console.log(err);
-    }
-}
-async function add_gfccp_order_withdraw(gfccp_order) {
-    try {
-        let pool = await sql.connect(config);
-        let add_gfccp_order_withdraw = await pool.request()
-            .input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
-            .input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
-            .input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
-            .input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
-            .input('note_new_1000', sql.Float, gfccp_order.note_new_1000)
-            .input('note_fit_1000', sql.Float, gfccp_order.note_fit_1000)
-            .input('note_new_500', sql.Float, gfccp_order.note_new_500)
-            .input('note_fit_500', sql.Float, gfccp_order.note_fit_500)
-            .input('note_new_100', sql.Float, gfccp_order.note_new_100)
-            .input('note_fit_100', sql.Float, gfccp_order.note_fit_100)
-            .input('note_new_50', sql.Float, gfccp_order.note_new_50)
-            .input('note_fit_50', sql.Float, gfccp_order.note_fit_50)
-            .input('note_new_20', sql.Float, gfccp_order.note_new_20)
-            .input('note_fit_20', sql.Float, gfccp_order.note_fit_20)
-            .input('note_new_10', sql.Float, gfccp_order.note_new_10)
-            .input('note_fit_10', sql.Float, gfccp_order.note_fit_10)
-            .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
-            .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
-            .input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
-            .input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
-            .input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
-            .input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
-            .input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
-            .input('remark', sql.NVarChar, gfccp_order.remark)
-            .input('order_date', sql.DateTime, gfccp_order.order_date)
-            .input('order_category', sql.NVarChar, gfccp_order.order_category)
-            .input('servicetype', sql.NVarChar, gfccp_order.servicetype)
-            .input('customer_no', sql.NVarChar, gfccp_order.customer_no)
-            .input('row_type', sql.NVarChar, gfccp_order.row_type)
-            .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
-            .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
-            .input('createby', sql.NVarChar, gfccp_order.createby)
-            .execute('add_gfccp_order_withdraw');
-        return add_gfccp_order_withdraw.recordsets;
-    }
-    catch (err) {
-        console.log(err);
-    }
-}
+// async function add_gfccp_order_deposit(gfccp_order) {
+//     try {
+//         let pool = await sql.connect(config);
+//         let add_gfccp_order_deposit = await pool.request()
+//             .input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
+//             .input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
+//             .input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
+//             .input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
+//             .input('note_uncount_1000', sql.Float, gfccp_order.note_uncount_1000)
+//             .input('note_uncount_500', sql.Float, gfccp_order.note_uncount_500)
+//             .input('note_uncount_100', sql.Float, gfccp_order.note_uncount_100)
+//             .input('note_uncount_50', sql.Float, gfccp_order.note_uncount_50)
+//             .input('note_uncount_20', sql.Float, gfccp_order.note_uncount_20)
+//             .input('note_uncount_10', sql.Float, gfccp_order.note_uncount_10)
+//             .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
+//             .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
+//             .input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
+//             .input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
+//             .input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
+//             .input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
+//             .input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
+//             .input('remark', sql.NVarChar, gfccp_order.remark)
+//             .input('order_date', sql.DateTime, gfccp_order.order_date)
+//             .input('order_category', sql.NVarChar, gfccp_order.order_category)
+//             .input('servicetype', sql.NVarChar, gfccp_order.servicetype)
+//             .input('customer_no', sql.NVarChar, gfccp_order.customer_no)
+//             .input('row_type', sql.NVarChar, gfccp_order.row_type)
+//             .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
+//             .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+//             .input('createby', sql.NVarChar, gfccp_order.createby)
+//             .execute('add_gfccp_order_deposit');
+//         return add_gfccp_order_deposit.recordsets;
+//     }
+//     catch (err) {
+//         console.log(err);
+//     }
+// }
+// async function add_gfccp_order_withdraw(gfccp_order) {
+//     try {
+//         let pool = await sql.connect(config);
+//         let add_gfccp_order_withdraw = await pool.request()
+//             .input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
+//             .input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
+//             .input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
+//             .input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
+//             .input('note_new_1000', sql.Float, gfccp_order.note_new_1000)
+//             .input('note_fit_1000', sql.Float, gfccp_order.note_fit_1000)
+//             .input('note_new_500', sql.Float, gfccp_order.note_new_500)
+//             .input('note_fit_500', sql.Float, gfccp_order.note_fit_500)
+//             .input('note_new_100', sql.Float, gfccp_order.note_new_100)
+//             .input('note_fit_100', sql.Float, gfccp_order.note_fit_100)
+//             .input('note_new_50', sql.Float, gfccp_order.note_new_50)
+//             .input('note_fit_50', sql.Float, gfccp_order.note_fit_50)
+//             .input('note_new_20', sql.Float, gfccp_order.note_new_20)
+//             .input('note_fit_20', sql.Float, gfccp_order.note_fit_20)
+//             .input('note_new_10', sql.Float, gfccp_order.note_new_10)
+//             .input('note_fit_10', sql.Float, gfccp_order.note_fit_10)
+//             .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
+//             .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
+//             .input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
+//             .input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
+//             .input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
+//             .input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
+//             .input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
+//             .input('remark', sql.NVarChar, gfccp_order.remark)
+//             .input('order_date', sql.DateTime, gfccp_order.order_date)
+//             .input('order_category', sql.NVarChar, gfccp_order.order_category)
+//             .input('servicetype', sql.NVarChar, gfccp_order.servicetype)
+//             .input('customer_no', sql.NVarChar, gfccp_order.customer_no)
+//             .input('row_type', sql.NVarChar, gfccp_order.row_type)
+//             .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
+//             .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+//             .input('createby', sql.NVarChar, gfccp_order.createby)
+//             .execute('add_gfccp_order_withdraw');
+//         return add_gfccp_order_withdraw.recordsets;
+//     }
+//     catch (err) {
+//         console.log(err);
+//     }
+// }
 async function checkUser(data_all) {
     let jobid = data_all["jobid"]
     let password = data_all["password"]
@@ -1177,8 +1190,6 @@ async function update_cashstatus_order(Id, Type_) {
 module.exports = {
     getOrdersList: getOrdersList,
     getOrder: getOrder,
-    add_gfccp_order_deposit: add_gfccp_order_deposit,
-    add_gfccp_order_withdraw: add_gfccp_order_withdraw,
     getBranchData: getBranchData,
     getCashCenterData: getCashCenterData,
     add_manual_order: add_manual_order,
@@ -1194,6 +1205,9 @@ module.exports = {
     getDownloadLink: getDownloadLink,
     getBOT_Branch: getBOT_Branch,
     getBranchForCash: getBranchForCash,
-    getCashCenterBOT: getCashCenterBOT
+    getCashCenterBOT: getCashCenterBOT,
+    getCCT_Data: getCCT_Data
     // getCCT_Branch: getCCT_Branch
+    // add_gfccp_order_deposit: add_gfccp_order_deposit,
+    // add_gfccp_order_withdraw: add_gfccp_order_withdraw,
 }
