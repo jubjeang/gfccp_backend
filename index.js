@@ -5,7 +5,13 @@ const express = require('express')
 const multer = require('multer')
 const app = express()
 const ftp = require("basic-ftp")
+const path = require('path')
 var fs = require('fs');
+var mime = require('mime');
+var contentDisposition = require('content-disposition')
+var destroy = require('destroy')
+var onFinished = require('on-finished')
+
 var fileName
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
@@ -79,6 +85,7 @@ const check_pcs = (value_, type_) => {
     }
     return returnValue
 }
+
 app.post('/upload', upload.single('file'), (req, res) => {
     // dboperations.getOrder(12443).then((result, err) => {
     //     if (err) {
@@ -476,8 +483,39 @@ app.get('/ordertrackinglist', (req, res) => {
 })
 // create application/x-www-form-urlencoded parser
 var bodyParser = require('body-parser');
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
+var urlencodedParser = bodyParser.urlencoded({ extended: false }) 
+app.get("/generateXLS", urlencodedParser, async (req, res) => { 
+    //console.log('req.query[data_]', req.query['data_'])
+    let data_ = req.query['data_'].split(':')
+    //console.log('data_[4]', data_[4])
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[4];
+    //var file = __dirname + '/reports/2022-10-27/Rayong/UOB/(ก่อนคัด)/Demo รายงานยอดเงินคงคลังประจำวัน 27-10-2022 ((ก่อนคัด)).csv';
+    var filename = path.basename(file);
+    var mimetype = mime.lookup(file);
+    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
+    res.setHeader('Content-Disposition', contentDisposition(file))
+    var filestream = fs.createReadStream(file);
+    filestream.pipe(res);
+    onFinished(res, () => {
+        destroy(filestream)
+    })    
+})
+app.get("/generateCSV", urlencodedParser, async (req, res) => {
+    //console.log('req.query[data_]', req.query['data_'])
+    let data_ = req.query['data_'].split(':')
+    //console.log('data_[3]', data_[3])
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[3];
+    //var file = __dirname + '/reports/2022-10-27/Rayong/UOB/(ก่อนคัด)/Demo รายงานยอดเงินคงคลังประจำวัน 27-10-2022 ((ก่อนคัด)).csv';
+    var filename = path.basename(file);
+    var mimetype = mime.lookup(file);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8;")
+    res.setHeader('Content-Disposition', contentDisposition(file))
+    var filestream = fs.createReadStream(file);
+    filestream.pipe(res);
+    onFinished(res, () => {
+        destroy(filestream) 
+    })
+})
 app.get('/getcct_data', urlencodedParser, async (req, res) => {
     dboperations.getCCT_Data(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
         if (err) {
@@ -536,7 +574,8 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         cctname: req.query['CCT_Data'],
                         typeofreport: dir_[index - 1].name,
                         remotepath: path_,
-                        files: getReportFilename(path_)
+                        files: getReportFilename(path_),
+                        id_: index - 1
                     }
                     // output_ =  getReportFilename(path_)
                     // console.log('getReportFilename: ', output_)
@@ -567,7 +606,7 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                     //          }
                     //         // console.log(file);
                     //     }) 
-                    // })
+                    // })  
                 }
                 else//--------------------------------------------------มีโฟลเดอร์ backend                
                 {
@@ -577,7 +616,8 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         cctname: req.query['CCT_Data'],
                         typeofreport: dir_[index - 1].name,
                         remotepath: path_,
-                        files: getReportFilename(path_)
+                        files: getReportFilename(path_),
+                        id_: index - 1
                     }
                     // output_ = getReportFilename(path_)
                     // console.log('getReportFilename: ', output_)
@@ -635,10 +675,11 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
         console.log(err)
     }
     client.close()
-    res.json(output_data) 
+    res.json(output_data)
 })
 const getReportFilename = (path_) => {
     let output = []
+    let countfile = 0
     //let output0={}
     console.log('start getReportFilename path_: ', path_)
     fs.readdirSync(path_).forEach(file => {
@@ -647,33 +688,33 @@ const getReportFilename = (path_) => {
         //     return console.log('Unable to scan directory: ' + err);
         // }
         //listing all files using forEach
-        let countfile = 0
+
         // files.forEach(function (file) {
-            // Do whatever you want to do with the file
-            //console.log( 'file: ',file )
-            if (file) {
-                if (countfile === 0) {
-                    output.push({ file1: file })
-                    console.log('file1: ', file)
-                    countfile++
-                }
-                else {
-                    // output0={file2: file}
-                    output.push({ file2: file })
-                    console.log('file2: ', file)
-                    countfile = 0 
-                }
-                //output_data.push(output_data0)
-                //console.log('file: ',file)
+        // Do whatever you want to do with the file
+        //console.log( 'file: ',file )
+        if (file) {
+            if (countfile === 0) {
+                output.push({ file1: file })
+                console.log('file1: ', file)
+                countfile++
             }
-            // console.log(file);
+            else {
+                // output0={file2: file}
+                output.push({ file2: file })
+                console.log('file2: ', file)
+                countfile = 0
+            }
+            //output_data.push(output_data0)
+            //console.log('file: ',file)
+        }
+        // console.log(file);
         //})
     })
     // console.log('output0: ',output0)
     // output.push( output0 )
     return output
 }
-//------------branch data
+//------------branch data 
 app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
     // console.log(req.query['CustomerID'])
     let type_ = ''
