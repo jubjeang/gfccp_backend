@@ -10,7 +10,7 @@ var fs = require('fs');
 var mime = require('mime');
 var contentDisposition = require('content-disposition')
 var destroy = require('destroy')
-var onFinished = require('on-finished')
+var onFinished = require('on-finished') 
 
 var fileName
 const storage = multer.diskStorage({
@@ -84,17 +84,8 @@ const check_pcs = (value_, type_) => {
         returnValue = (value_ !== '') && (value_ !== null) ? parseFloat(value_.toString().replaceAll(',', ''), 10) / 1000 / 0.25 : 0.00
     }
     return returnValue
-}
-
+} 
 app.post('/upload', upload.single('file'), (req, res) => {
-    // dboperations.getOrder(12443).then((result, err) => {
-    //     if (err) {
-    //         console.log(err)
-    //     }
-    //     else {
-    //         //console.log(result)
-    //     }
-    // }) 
     res.json({
         file: req.file,
         OrderCategory: req.body.OrderCategory,
@@ -103,10 +94,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
         JobDate: req.body.JobDate
     })
     console.log(req.body.OrderType)//1=Withdraw; 2=Deposit
-    //const date_ = new Date(req.body.JobDate).toISOString()
     const date_ = req.body.JobDate
     console.log('req.body.JobDate: ', req.body.JobDate)
-    // console.log('date_: ', date_)
     console.log('file: ', req.file)
     console.log('req.file.originalname: ', req.file.originalname)
     console.log('OrderCategory: ', req.body.OrderCategory)
@@ -123,8 +112,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     let CustomerID = req.body.CustomerID
     let attach_file_origin = req.file.originalname
     let data_ = {}
-    let NULL_ = null
-    let FLOAT_NULL_ = 0
+    let NULL_ = null     
     xlsxFile('./uploads/' + fileName).then((rows) => {
         for (i in rows) {
             if (i >= 2) {
@@ -469,7 +457,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
             }
         }
     })
-    //console.log(fileName)
 })
 app.get('/ordertrackinglist', (req, res) => {
     dboperations.getOrdertrackinglist().then((result, err) => {
@@ -484,37 +471,66 @@ app.get('/ordertrackinglist', (req, res) => {
 // create application/x-www-form-urlencoded parser
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: false }) 
-app.get("/generateXLS", urlencodedParser, async (req, res) => { 
-    //console.log('req.query[data_]', req.query['data_'])
-    let data_ = req.query['data_'].split(':')
-    //console.log('data_[4]', data_[4])
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[4];
-    //var file = __dirname + '/reports/2022-10-27/Rayong/UOB/(ก่อนคัด)/Demo รายงานยอดเงินคงคลังประจำวัน 27-10-2022 ((ก่อนคัด)).csv';
-    var filename = path.basename(file);
-    var mimetype = mime.lookup(file);
-    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
-    res.setHeader('Content-Disposition', contentDisposition(file))
-    var filestream = fs.createReadStream(file);
-    filestream.pipe(res);
-    onFinished(res, () => {
-        destroy(filestream)
-    })    
-})
-app.get("/generateCSV", urlencodedParser, async (req, res) => {
-    //console.log('req.query[data_]', req.query['data_'])
-    let data_ = req.query['data_'].split(':')
-    //console.log('data_[3]', data_[3])
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[3];
-    //var file = __dirname + '/reports/2022-10-27/Rayong/UOB/(ก่อนคัด)/Demo รายงานยอดเงินคงคลังประจำวัน 27-10-2022 ((ก่อนคัด)).csv';
+app.post("/generateCSV",urlencodedParser, async (req, res) => { 
+    let data = req.body
+    let obj = null
+    for (let x in data) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    let data_ = obj_json['data_'].split(':')    
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[3];    
     var filename = path.basename(file);
     var mimetype = mime.lookup(file);
     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
+    console.log('res: ',res)
     filestream.pipe(res);
     onFinished(res, () => {
         destroy(filestream) 
     })
+    
+})
+app.post('/checkUser', urlencodedParser, (req, res) => {
+    let data_ = req.body
+    let obj = null
+    for (let x in data_) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    let data_all = {
+        'jobid': obj_json['jobid'],
+        'password': obj_json['password'],
+    }
+    // console.log(data_all)
+    dboperations.checkUser(data_all).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
+app.post("/generateXLS", urlencodedParser, async (req, res) => { 
+    let data = req.body
+    let obj = null
+    for (let x in data) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    let data_ = obj_json['data_'].split(':')    
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[4];    
+    var filename = path.basename(file);
+    var mimetype = mime.lookup(file);
+    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
+    res.setHeader('Content-Disposition', encodeURIComponent(file))
+    var filestream = fs.createReadStream(file);
+    filestream.pipe(res);
+    onFinished(res, () => {
+        destroy(filestream) 
+    })    
 })
 app.get('/getcct_data', urlencodedParser, async (req, res) => {
     dboperations.getCCT_Data(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
@@ -535,7 +551,6 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/UOB'
     var dir_ = {}
-    var output_
     try {
         await client.access({
             host: "192.168.100.94",
@@ -543,19 +558,18 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
             user: "svc-ftp-std",
             password: "Hr$797Yl",
             secure: false
-        })
-        //let file1,file2
+        })        
         dir_ = await client.list(path)
         console.log('path: ', path)
         console.log('dir_ : ', dir_)
         console.log('dir_.length : ', dir_.length)
         console.log('dir_.name : ', dir_[0].name)
-        //console.log( await client.ensureDir("2022-10-20/Ayuthaya/BAY/คงคลังสิ้นวัน") )        
-        //'./tmp/but/then/nested';
         let path_ = ""
         if (dir_.length > 0) {
             for (var index = 1; index <= dir_.length; index++) {
-                path_ = 'reports/' + path + '/'
+                path_ = 'reports/' + path + '/'//--------------------------------------------------------------------------------------------path D:/projects/gfccp_web/public/reports/
+                //path_ = 'D:/projects/gfccp_web/public/reports/' + path + '/'//-------------------------------------------------------------path D:/projects/gfccp_web/public/reports/
+                
                 path_ += dir_[index - 1].name
                 console.log('path_: ', path_)
                 console.log('dir_[ index-1 ].name: ', dir_[index - 1].name)
@@ -576,37 +590,7 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         remotepath: path_,
                         files: getReportFilename(path_),
                         id_: index - 1
-                    }
-                    // output_ =  getReportFilename(path_)
-                    // console.log('getReportFilename: ', output_)
-                    // output_ =getReportFilename(path_)
-                    // console.log( 'output_: ',output_ )
-                    // fs.readdir(path_, function (err, files) {
-                    //     //handling error
-                    //     if (err) { 
-                    //         return console.log('Unable to scan directory: ' + err);
-                    //     }
-                    //     //listing all files using forEach
-                    //     let countfile = 0
-                    //     files.forEach(function (file) {
-                    //         // Do whatever you want to do with the file
-                    //         if (file) {
-                    //             if( countfile===0)
-                    //             {
-                    //                 output_data0={file1: file}
-                    //                 countfile++
-                    //             }
-                    //             else
-                    //             {
-                    //                 output_data0={file2:file}
-                    //                 countfile = 0
-                    //             }
-                    //             output_data.push(output_data0)
-                    //             //console.log('file: ',file);
-                    //          }
-                    //         // console.log(file);
-                    //     }) 
-                    // })  
+                    }                    
                 }
                 else//--------------------------------------------------มีโฟลเดอร์ backend                
                 {
@@ -618,55 +602,10 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         remotepath: path_,
                         files: getReportFilename(path_),
                         id_: index - 1
-                    }
-                    // output_ = getReportFilename(path_)
-                    // console.log('getReportFilename: ', output_)
-                    // let output_ =getReportFilename(path_)
-                    // console.log( 'getReportFilename: ',output_ )
-                    // fs.readdir(path_, function (err, files) {
-                    //     //handling error
-                    //     if (err) {
-                    //         return console.log('Unable to scan directory: ' + err);
-                    //     }
-                    //     //listing all files using forEach
-                    //     let countfile = 0
-                    //     files.forEach(function (file) {
-                    //         // Do whatever you want to do with the file
-                    //         if (file) {
-                    //             if( countfile===0)
-                    //             {                                 
-                    //                 console.log('if( countfile===0): ')
-                    //                 console.log('if( countfile===0) file: ',file)
-                    //                 output_data0.file1=file
-                    //                 //output_data.push({file1: file})
-                    //                 countfile++
-                    //             }
-                    //             else
-                    //             {
-                    //                 console.log('else if( countfile===0): ');
-                    //                 console.log('else if( countfile===0) file: ',file)
-                    //                 output_data0.file2=file
-                    //                 //output_data.push({file2: file})
-                    //                 countfile = 0
-                    //             }
-                    //             //console.log('file: ',file);
-                    //             //output_data.push(output_data0)
-                    //          }
-                    //         // console.log(file);
-                    //     }) 
-                    //     console.log('output_data: ',output_data)
-                    // }) 
+                    }                    
                 }
                 output_data.push(output_data0)
             }
-            // for (var index = 1; index <= dir_.length; index++) {
-            //     path_ = 'reports/' + path + '/'
-            //     path_ += dir_[index - 1].name
-            //     console.log('path_: ', path_)
-            //     console.log('dir_[ index-1 ].name: ', dir_[index - 1].name)
-            //     output_ = getReportFilename(path_)
-            //     console.log('getReportFilename: ', output_)
-            // }
         }
         console.log('output_data: ', output_data)
         //return output_data
@@ -683,15 +622,6 @@ const getReportFilename = (path_) => {
     //let output0={}
     console.log('start getReportFilename path_: ', path_)
     fs.readdirSync(path_).forEach(file => {
-        //handling error
-        // if (err) {
-        //     return console.log('Unable to scan directory: ' + err);
-        // }
-        //listing all files using forEach
-
-        // files.forEach(function (file) {
-        // Do whatever you want to do with the file
-        //console.log( 'file: ',file )
         if (file) {
             if (countfile === 0) {
                 output.push({ file1: file })
@@ -704,11 +634,7 @@ const getReportFilename = (path_) => {
                 console.log('file2: ', file)
                 countfile = 0
             }
-            //output_data.push(output_data0)
-            //console.log('file: ',file)
         }
-        // console.log(file);
-        //})
     })
     // console.log('output0: ',output0)
     // output.push( output0 )
@@ -826,27 +752,6 @@ app.get('/getbanktypedata', urlencodedParser, (req, res) => {
 app.get('/getdownloadlink', urlencodedParser, (req, res) => {
     console.log('req.query[user_id]: ', req.query['user_id'])
     dboperations.getDownloadLink(req.query['user_id']).then((result, err) => {
-        if (err) {
-            console.log(err)
-        }
-        else {
-            res.json(result[0])
-        }
-    })
-})
-app.post('/checkUser', urlencodedParser, (req, res) => {
-    let data_ = req.body
-    let obj = null
-    for (let x in data_) {
-        obj = x
-    }
-    let obj_json = JSON.parse(obj)
-    let data_all = {
-        'jobid': obj_json['jobid'],
-        'password': obj_json['password'],
-    }
-    // console.log(data_all)
-    dboperations.checkUser(data_all).then((result, err) => {
         if (err) {
             console.log(err)
         }
