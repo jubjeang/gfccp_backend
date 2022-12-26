@@ -1,6 +1,31 @@
 var config = require('../server/dbconfig');
 const sql = require('mssql'); 
 
+async function getRole(userID) {
+    try {
+        let pool = await sql.connect(config);
+        let spGetRole = await pool.request()        
+        .input('userID', sql.Int, userID)
+        .execute("spGetRole");           
+        return spGetRole.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+async function getUser(userID,customerID) {
+    try {
+        let pool = await sql.connect(config);
+        let spGetUser = await pool.request()        
+        .input('userID', sql.Int, userID)
+        .input('CustomerID', sql.NVarChar, customerID)
+        .execute("spGetUser");           
+        return spGetUser.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 async function get_pbi_url(pagename,CustomerID) {
     try {
         let pool = await sql.connect(config);
@@ -145,8 +170,7 @@ async function getBranchForCash(CustomerID,CCT,user_id) {
     catch (error) {
         console.log(error);
     }
-}
-
+} 
 async function getOrdertrackinglist() {
     try {
         let pool = await sql.connect(config);
@@ -191,18 +215,59 @@ async function getOrdersList(user_id,CustomerID) {
         console.log(error);
     }
 }
-async function getApproveList(RoleId,CustomerID) {
+async function getApproveList(RoleId
+    ,CustomerID
+    ,user_id
+    ,approve_setting_id) {
     try {
-        let pool = await sql.connect(config);
-        // console.log('cashstatus: ',cashstatus)
-        // console.log('CustomerID: ',CustomerID)
-        // let products = await pool.request().query("select o.*,(SELECT top 1 b.gfc_cct from [dbo].[T_Branch] b where gfc_cct is not null and b.branch_id = o.branch_code ) as cash_center from gfccp_order o where LTRIM(RTRIM(row_type))<>'summary' and ( convert(varchar, order_date, 105)  = convert(varchar, GETDATE(), 105) or convert(varchar, order_date, 105)  = convert(varchar, DATEADD(day,1,GETDATE()), 105) ) and o.[status]='Y' order by AutoID desc");
+        let pool = await sql.connect(config);        
         let spApprovelist = await pool.request()
         .input('customerID_', sql.NVarChar, CustomerID)
         .input('RoleId_', sql.Int, RoleId)
-        .execute("spApprovelist");   
-        // .query("select * from vOrdersList where cashstatus=@cashstatus and customerID=@customerID  order by AutoID desc");      
+        .input('user_id', sql.Int, user_id)
+        .input('approve_setting_id', sql.Int, approve_setting_id)
+        .execute("spApprovelist");           
         return spApprovelist.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+async function getApproveProcList(user_id) {
+    try {
+        let pool = await sql.connect(config);
+        let spApproveProclist = await pool.request()
+        .input('user_id', sql.NVarChar, user_id)        
+        .execute("spApproveProclist");   
+        // .query("select * from vOrdersList where cashstatus=@cashstatus and customerID=@customerID  order by AutoID desc");      
+        return spApproveProclist.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+async function get_approveProcData(Id) {
+    try {
+        let pool = await sql.connect(config);
+        let spApproveProcData = await pool.request()
+        .input('Id', sql.NVarChar, Id)        
+        .execute("spApproveProcData");           
+        return spApproveProcData.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+async function get_approveProcDataDet(Id,version) {
+    try {
+        let pool = await sql.connect(config);
+        let spApproveProcDataDet = await pool.request()
+        .input('approve_setting_id', sql.NVarChar, Id)
+        .input('version', sql.Float, version)
+        .execute("spApproveProcDataDet");      
+        console.log('Id: ',Id)
+        console.log('version: ',version)     
+        return spApproveProcDataDet.recordsets;
     }
     catch (error) {
         console.log(error);
@@ -297,6 +362,8 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('row_type', sql.NVarChar, gfccp_order.row_type)
                 .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
                 .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+                .input('roleid', sql.Int, gfccp_order.roleid)
+                .input('approve_setting_id', sql.Int, gfccp_order.approve_setting_id)
                 .input('createby', sql.NVarChar, gfccp_order.createby)
                 .execute('add_gfccp_order_deposit');
             output = add_gfccp_order_deposit.recordsets;
@@ -378,6 +445,8 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('row_type', sql.NVarChar, gfccp_order.row_type)
                 .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
                 .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+                .input('roleid', sql.Int, gfccp_order.roleid)
+                .input('approve_setting_id', sql.Int, gfccp_order.approve_setting_id)
                 .input('createby', sql.NVarChar, gfccp_order.createby)
                 .execute('add_gfccp_order_withdraw');
                 output = add_gfccp_order_withdraw.recordsets;
@@ -473,11 +542,12 @@ async function checkUser(data_all) {
     let password = data_all["password"]
     try {
         let pool = await sql.connect(config);
-        let product = await pool.request()
+        let spCheckUser = await pool.request()
             .input('username', sql.NVarChar, jobid)
             .input('password', sql.NVarChar, password)
-            .query("SELECT * from users where username = @username and password = @password");
-        return product.recordsets;
+            //.query("SELECT * from users where username = @username and password = @password");
+            .execute('spCheckUser');
+        return spCheckUser.recordsets;
     }
     catch (error) {
         console.log(error);
@@ -486,6 +556,8 @@ async function checkUser(data_all) {
 async function add_manual_order(gfccp_order) {
     let NULL_ = null
     let FLOAT_NULL_ = 0
+    let roleid = gfccp_order["roleid"]
+    let approve_setting_id = gfccp_order["approve_setting_id"] 
     let customerID = gfccp_order["customerID"]
     let order_category = gfccp_order["order_category"]
     let servicetype = gfccp_order["servicetype"]
@@ -658,6 +730,7 @@ async function add_manual_order(gfccp_order) {
     try {
         let pool = await sql.connect(config);
         let add_manual_order = await pool.request()
+            .input('approve_setting_id', sql.Int, approve_setting_id)
             .input('customerID', sql.NVarChar, customerID)
             .input('order_category', sql.NVarChar, order_category)
             .input('servicetype', sql.NVarChar, servicetype)
@@ -819,9 +892,69 @@ async function add_manual_order(gfccp_order) {
             .input('total_by_branch', sql.Float, tbGrandTotalAmount)
             .input('row_type', sql.NVarChar, row_type)
             .input('input_type', sql.NVarChar, input_type)
+            .input('roleid', sql.Int, roleid)            
             .input('createby', sql.NVarChar, user_id)
             .execute('add_manual_order');
         return add_manual_order.recordsets;
+    }
+    catch (err) {
+        console.log(err);
+    }
+    //return add_manual_order.recordsets
+}
+async function add_approveProc(data) {
+
+    let ap_name = data["ap_name"]
+    //let branchtocash =  data["BranchToCash"] === "true" ? '1' : '0'
+    let branchtocash =  data["BranchToCash"]
+    let cashtocash =  data["CashToCash"]
+    let bottocash =  data["BOTToCash"]
+    let branchtobranch =  data["BranchToBranch"]
+    let cashtobranch =  data["CashToBranch"]
+    let cashtobot =  data["CashToBOT"]
+    let AllRowsDet = parseInt(data['AllRowsDet'])     
+    let gfc_cct_code =  data["gfc_cct_code"]
+    let user_id = data["user_id"]
+    let CustomerID = data["CustomerID"]
+    let output_ = null
+    let output = null
+    let approveProcId = 0 
+    try {
+        let pool = await sql.connect(config);
+        let add_approveProc = await pool.request()
+            .input('ap_name', sql.NVarChar, ap_name)
+            .input('branchtocash', sql.Char, branchtocash)
+            .input('cashtocash', sql.Char, cashtocash)
+            .input('bottocash', sql.Char, bottocash)
+            .input('branchtobranch', sql.Char, branchtobranch)
+            .input('cashtobranch', sql.Char, cashtobranch)
+            .input('cashtobot', sql.Char, cashtobot)
+            .input('customerID', sql.NVarChar, CustomerID)
+            .input('createby', sql.NVarChar, user_id)
+            .execute('add_approveProc');
+            output_ = add_approveProc.recordsets
+            console.log( 'output: ',output_ )
+            output_ = output_[0] 
+            output = output_[0]
+            approveProcId = output.id 
+            let data_ = approveProcId.split(':')
+            // output = output
+            //output_ = json(output)  
+            console.log( 'output: ',output.id )
+            for (var index = 1; index <= AllRowsDet; index++) 
+            {
+                let add_approveProc_det = await pool.request()
+                .input('approve_setting_id', sql.Int, data_[0])                
+                .input('roleid', sql.NVarChar, data["RoleId_"+index])
+                .input('version', sql.Int, data_[1])
+                .input('rolename', sql.NVarChar, data["RoleName_"+index])
+                .input('userid', sql.NVarChar, data["UserId_"+index])
+                .input('username', sql.NVarChar, data["UserName_"+index])                
+                .input('createby', sql.NVarChar, user_id)
+                .execute('add_approveProc_det');
+                output_ = add_approveProc_det.recordsets
+            } 
+            return output_
     }
     catch (err) {
         console.log(err);
@@ -1174,12 +1307,71 @@ async function update_order(gfccp_order) {
     }
     //return add_manual_order.recordsets
 }
-async function update_cashstatus_order(Id, Type_) {
+async function update_approveproc(data) {
+    let branchtocash =  data["branchtocash"]
+    let cashtocash =  data["cashtocash"]
+    let bottocash =  data["bottocash"]
+    let branchtobranch =  data["branchtobranch"]
+    let cashtobranch =  data["cashtobranch"]
+    let cashtobot =  data["cashtobot"]
+    let AllRowsDet = parseInt(data['AllRowsDet']) 
+    let output_ = null
+    try {
+        let pool = await sql.connect(config);
+        let update_approveproc = await pool.request()
+            .input('Id_', sql.Int, data["Id"])
+            .input('ap_name', sql.NVarChar, data["ap_name"])
+            .input('branchtocash', sql.NVarChar, branchtocash)
+            .input('cashtocash', sql.NVarChar, cashtocash)
+            .input('bottocash', sql.NVarChar, bottocash)
+            .input('branchtobranch', sql.NVarChar, branchtobranch)
+            .input('cashtobranch', sql.NVarChar, cashtobranch)
+            .input('cashtobot', sql.NVarChar, cashtobot)
+            .input('modifyby', sql.NVarChar, data["user_id"])
+            .input('customerID', sql.NVarChar, data["CustomerID"])
+            .execute('update_approveproc');
+            output_ = update_approveproc.recordsets[0]
+            output_ = parseInt( output_[0] .newid_ )
+            console.log('output_: ',output_)
+            for (var index = 1; index <= AllRowsDet; index++) 
+            { 
+                let update_approveproc_det = await pool.request()
+                .input('id_approve_setting', sql.Int, output_)
+                // .input('Id', sql.Int, data["ApproveProcDetId"+index])
+                .input('roleid', sql.Int, parseInt( data["ddlRoleEditId_"+index] ) )
+                .input('rolename', sql.NVarChar, data["ddlRoleEditName_"+index])
+                .input('userid', sql.Int, parseInt( data["ddlUserEditId_"+index] ) )
+                .input('username', sql.NVarChar, data["ddlUserEditName_"+index])                
+                .input('modifyby', sql.NVarChar, data["user_id"])
+                .execute('update_approveproc_det');
+                //output2_ = update_approveproc_det.recordsets 
+            } 
+            return output_
+    }
+    catch (err) {
+        console.log(err);
+    }    
+}
+async function delete_app_proc_det(Id,user_id) { 
+    try {
+        let pool = await sql.connect(config);
+        let delete_app_proc_det = await pool.request()
+            .input('Id', sql.Int, Id)
+            .input('modifyby', sql.Int, user_id)
+            .execute('delete_app_proc_det');           
+        return delete_app_proc_det.recordsets 
+    }
+    catch (err) {
+        console.log(err);
+    }    
+}
+async function update_cashstatus_order(Id, Type_,user_id) {
     try {
         let pool = await sql.connect(config);
         let update_cashstatus_order = await pool.request()
             .input('Id_', sql.Int, Id)
             .input('Type_', sql.NVarChar, Type_)
+            .input('user_id', sql.Int, user_id)            
             .execute('update_cashstatus_order');
         return update_cashstatus_order.recordsets;
     }
@@ -1189,6 +1381,7 @@ async function update_cashstatus_order(Id, Type_) {
 }
 module.exports = {
     getOrdersList: getOrdersList,
+    delete_app_proc_det: delete_app_proc_det,
     getOrder: getOrder,
     getBranchData: getBranchData,
     getCashCenterData: getCashCenterData,
@@ -1201,12 +1394,19 @@ module.exports = {
     manual_add_order : manual_add_order,
     get_pbi_url : get_pbi_url,
     getApproveList: getApproveList,
+    getApproveProcList: getApproveProcList,
     getBankTypeData : getBankTypeData,
     getDownloadLink: getDownloadLink,
     getBOT_Branch: getBOT_Branch,
     getBranchForCash: getBranchForCash,
     getCashCenterBOT: getCashCenterBOT,
-    getCCT_Data: getCCT_Data
+    getCCT_Data: getCCT_Data,
+    getRole : getRole,
+    getUser: getUser,
+    add_approveProc: add_approveProc,
+    get_approveProcData: get_approveProcData,
+    get_approveProcDataDet: get_approveProcDataDet,
+    update_approveproc: update_approveproc
     // getCCT_Branch: getCCT_Branch
     // add_gfccp_order_deposit: add_gfccp_order_deposit,
     // add_gfccp_order_withdraw: add_gfccp_order_withdraw,

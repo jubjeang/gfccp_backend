@@ -111,6 +111,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     const user_id = req.body.user_id
     let CustomerID = req.body.CustomerID
     let attach_file_origin = req.file.originalname
+    let roleid = req.body.roleid
     let data_ = {}
     let NULL_ = null     
     xlsxFile('./uploads/' + fileName).then((rows) => {
@@ -177,6 +178,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'row_type': 'normal',
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
+                                'roleid': roleid,
+                                'approve_setting_id' : req.body.approve_setting_id,
                                 'createby': user_id,
                             }
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
@@ -268,6 +271,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'row_type': 'normal',
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
+                                'roleid': roleid,
+                                'approve_setting_id' : req.body.approve_setting_id,
                                 'createby': user_id,
                             }
                             dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
@@ -344,6 +349,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'row_type': 'summary',
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
+                                'roleid': roleid,
                                 'createby': user_id,
                             }
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
@@ -435,6 +441,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'row_type': 'summary',
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
+                                'roleid': roleid,
                                 'createby': user_id,
                             }
 
@@ -485,7 +492,7 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
-    console.log('res: ',res)
+    console.log('res: ',res) 
     filestream.pipe(res);
     onFinished(res, () => {
         destroy(filestream) 
@@ -493,7 +500,7 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
     
 })
 app.post('/checkUser', urlencodedParser, (req, res) => {
-    let data_ = req.body
+    let data_ = req.body 
     let obj = null
     for (let x in data_) {
         obj = x
@@ -515,8 +522,8 @@ app.post('/checkUser', urlencodedParser, (req, res) => {
 })
 app.post("/generateXLS", urlencodedParser, async (req, res) => { 
     let data = req.body
-    let obj = null
-    for (let x in data) {
+    let obj = null 
+    for (let x in data) { 
         obj = x
     }
     let obj_json = JSON.parse(obj)
@@ -541,7 +548,6 @@ app.get('/getcct_data', urlencodedParser, async (req, res) => {
             res.json(result[0])
         }
     })
-
 })
 app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     const client = new ftp.Client()
@@ -640,7 +646,34 @@ const getReportFilename = (path_) => {
     // output.push( output0 )
     return output
 }
-//------------branch data 
+//------------getrole
+app.get('/getrole', urlencodedParser, (req, res) => { 
+    // let type_ = ''
+    // type_ = req.query['type_']
+    console.log( 'req.query[user_id]',req.query['user_id'] )
+        dboperations.getRole( req.query['user_id'] ).then((result, err) => {
+            if (err) {
+                console.log(err) 
+            }
+            else {
+                res.json(result[0])
+            } 
+        })
+})
+app.get('/getuser', urlencodedParser, (req, res) => { 
+    // let type_ = ''
+    // type_ = req.query['type_']
+    console.log( 'req.query[user_id]',req.query['user_id'] )
+    console.log( 'req.query[CustomerID]',req.query['CustomerID'] )
+        dboperations.getUser( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
+            if (err) {
+                console.log(err)
+            }
+            else {
+                res.json(result[0])
+            } 
+        })
+})
 app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
     // console.log(req.query['CustomerID'])
     let type_ = ''
@@ -719,7 +752,40 @@ app.get('/orderlist', urlencodedParser, (req, res) => {
 //     })
 // })
 app.get('/approvelist', urlencodedParser, (req, res) => {
-    dboperations.getApproveList(req.query['RoleId'], req.query['CustomerID']).then((result, err) => {
+    dboperations.getApproveList(req.query['RoleId']
+    , req.query['CustomerID']
+    , req.query['user_id']
+    , req.query['approve_setting_id']).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
+app.get('/approveProcList', urlencodedParser, (req, res) => { 
+    dboperations.getApproveProcList( req.query['user_id'] ).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
+app.get('/get_approveProcData', urlencodedParser, (req, res) => { 
+    dboperations.get_approveProcData( req.query['Id']).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
+app.get('/get_approveProcDataDet', urlencodedParser, (req, res) => { 
+    dboperations.get_approveProcDataDet( req.query['approve_setting_id'],req.query['version']  ).then((result, err) => {
         if (err) {
             console.log(err)
         }
@@ -760,6 +826,24 @@ app.get('/getdownloadlink', urlencodedParser, (req, res) => {
         }
     })
 })
+app.post('/add_approveProc', urlencodedParser, (req, res) => {
+    let data_ = req.body
+    let obj = null
+    for (let x in data_) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    console.log( 'obj_json: ',obj_json )
+    console.log( 'data_: ',data_ )    
+    dboperations.add_approveProc(obj_json).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
 app.post('/manual_add_order', urlencodedParser, (req, res) => {
     let data_ = req.body
     let obj = null
@@ -769,6 +853,8 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
     let obj_json = JSON.parse(obj)
     let data_all = {
         'customerID': obj_json['CustomerID'],
+        'approve_setting_id' : obj_json['approve_setting_id'], 
+        'roleid': obj_json['roleid'],
         'order_category': obj_json['OrderCategoryNew'],
         'servicetype': obj_json['OrderTypeNew'],
         'refno': obj_json['RefNo'],
@@ -781,7 +867,7 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
         'user_id': obj_json['user_id'],
     }
     let AllRowsDet = parseInt(obj_json['AllRowsDet'])
-    // console.log('AllRowsDet: ' + AllRowsDet)
+    // console.log('AllRowsDet: ' + AllRowsDet) 
     let tbGrandTotalAmount = 0
     for (var index = 1; index <= AllRowsDet; index++) {
         //------------------------------------   
@@ -1410,6 +1496,27 @@ app.post('/edit_order', urlencodedParser, (req, res) => {
         }
     })
 })
+app.post('/edit_approveproc', urlencodedParser, (req, res) => {
+    let data_ = req.body
+    let obj = null
+    for (let x in data_) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    let AllRowsDet = parseInt(obj_json['AllRowsDet'])
+    console.log('obj_json: ',obj_json)
+    console.log('data_all AllRowsDet: ', AllRowsDet)
+    // console.log(data_all)
+
+    dboperations.update_approveproc(obj_json).then((result, err) => {
+        if (err) {
+            console.log(err)
+        }
+        else {
+            res.json(result[0]) 
+        }
+    })
+})
 app.get('/getcashorder', urlencodedParser, (req, res) => {
     //let data_ = req.query    
     // let Id = req.query['Id'] 
@@ -1426,12 +1533,29 @@ app.get('/getcashorder', urlencodedParser, (req, res) => {
 app.get('/update_cashstatus_order', urlencodedParser, (req, res) => {
     // console.log(req.query['Id'])
     // console.log(req.query['Type_'])
-    dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_']).then((result, err) => {
+    dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_'], req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
         }
         else {
             res.json(result[0])
+        }
+    })
+})
+app.get('/delete_app_proc_det', urlencodedParser, (req, res) => {
+    // let data_ = req.body
+    // let obj = null
+    // for (let x in data_) {
+    //     obj = x
+    // }
+    // let obj_json = JSON.parse(obj)    
+    // console.log('obj_json: ',obj_json)
+    dboperations.delete_app_proc_det(req.query['Id'],req.query['user_id']).then((result, err) => {
+        if (err) {
+            console.log(err) 
+        }
+        else {
+            res.json(result[0]) 
         }
     })
 })
