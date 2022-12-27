@@ -498,7 +498,7 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
         destroy(filestream) 
     })
     
-})
+}) 
 app.post('/checkUser', urlencodedParser, (req, res) => {
     let data_ = req.body 
     let obj = null
@@ -757,7 +757,7 @@ app.get('/approvelist', urlencodedParser, (req, res) => {
     , req.query['user_id']
     , req.query['approve_setting_id']).then((result, err) => {
         if (err) {
-            console.log(err)
+            console.log(err) 
         }
         else {
             res.json(result[0])
@@ -1514,7 +1514,7 @@ app.post('/edit_approveproc', urlencodedParser, (req, res) => {
         }
         else {
             res.json(result[0]) 
-        }
+        } 
     })
 })
 app.get('/getcashorder', urlencodedParser, (req, res) => {

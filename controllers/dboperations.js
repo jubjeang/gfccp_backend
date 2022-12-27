@@ -1316,6 +1316,7 @@ async function update_approveproc(data) {
     let cashtobot =  data["cashtobot"]
     let AllRowsDet = parseInt(data['AllRowsDet']) 
     let output_ = null
+    let output_2 = null
     try {
         let pool = await sql.connect(config);
         let update_approveproc = await pool.request()
@@ -1335,7 +1336,13 @@ async function update_approveproc(data) {
             console.log('output_: ',output_)
             for (var index = 1; index <= AllRowsDet; index++) 
             { 
-                let update_approveproc_det = await pool.request()
+                console.log('output_: ',output_)
+                console.log( 'data["ddlRoleEditId_'+index+'"]: ',data["ddlRoleEditId_"+index] )
+                console.log( 'data["ddlRoleEditName_'+index+'"]: ',data["ddlRoleEditName_"+index] )
+                console.log( 'data["ddlUserEditId_'+index+'"]: ',data["ddlUserEditId_"+index] )
+                console.log( 'data["ddlUserEditName_'+index+'"]: ',data["ddlUserEditName_"+index] )
+                console.log( 'data["user_id"]: ',data["user_id"] )
+                let update_approveproc_det = await pool.request()                
                 .input('id_approve_setting', sql.Int, output_)
                 // .input('Id', sql.Int, data["ApproveProcDetId"+index])
                 .input('roleid', sql.Int, parseInt( data["ddlRoleEditId_"+index] ) )
@@ -1344,7 +1351,7 @@ async function update_approveproc(data) {
                 .input('username', sql.NVarChar, data["ddlUserEditName_"+index])                
                 .input('modifyby', sql.NVarChar, data["user_id"])
                 .execute('update_approveproc_det');
-                //output2_ = update_approveproc_det.recordsets 
+                output_2 = update_approveproc_det.recordsets 
             } 
             return output_
     }
@@ -1366,10 +1373,10 @@ async function delete_app_proc_det(Id,user_id) {
     }    
 }
 async function update_cashstatus_order(Id, Type_,user_id) {
-    try {
+    try {  
         let pool = await sql.connect(config);
         let update_cashstatus_order = await pool.request()
-            .input('Id_', sql.Int, Id)
+            .input('Id_', sql.Int, Id) 
             .input('Type_', sql.NVarChar, Type_)
             .input('user_id', sql.Int, user_id)            
             .execute('update_cashstatus_order');
