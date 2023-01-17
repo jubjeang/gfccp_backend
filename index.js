@@ -11,6 +11,10 @@ var mime = require('mime');
 var contentDisposition = require('content-disposition')
 var destroy = require('destroy')
 var onFinished = require('on-finished') 
+const xlsx = require('xlsx')
+const iconv = require('iconv-lite')
+const csv = require('csv-parser')
+const JSFtp = require("jsftp");
 
 var fileName
 const storage = multer.diskStorage({
@@ -482,22 +486,50 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
     let data = req.body
     let obj = null
     for (let x in data) {
-        obj = x
+        obj = x  
     }
     let obj_json = JSON.parse(obj)
     let data_ = obj_json['data_'].split(':')    
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[3];    
-    var filename = path.basename(file);
-    var mimetype = mime.lookup(file);
+    console.log('obj_json: ',obj_json)
+    let customer =''
+    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
+        + '/' + customer
+    console.log('req.query[customerID]: ',req.query['customerID'],'path: ',path)
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[3];    
+    // var filename = path.basename(file);
+    // var mimetype = mime.lookup(file);
     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
-    console.log('res: ',res) 
+    console.log('res: ',res)
     filestream.pipe(res);
     onFinished(res, () => {
         destroy(filestream) 
     })
+
+//     let data = req.body
+//     let obj = null
+//     for (let x in data) {
+//         obj = x  
+//     }
+//     let obj_json = JSON.parse(obj) 
+//     let data_ = obj_json.data_.split(':')
+//     let customer =''
+//     obj_json.customerID === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+//    var file = __dirname + '/reports/'+obj_json.JobDate+'/'+obj_json.CCT_Data+'/'+customer+'/'+data_[2]+'/'+data_[3];
+//     //var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/' + customer + '/'+data_[2]+'/'+data_[3]    
     
+//     var filename = path.basename(file);
+//     var mimetype = mime.lookup(file);
+//     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
+//     res.setHeader('Content-Disposition', contentDisposition(file))
+//     var filestream = fs.createReadStream(file,'utf-8');
+//     console.log('res: ',res) 
+//     filestream.pipe(res)    
+//     onFinished(res, () => {
+//         destroy(filestream) 
+//     })    
 }) 
 app.post('/checkUser', urlencodedParser, (req, res) => {
     let data_ = req.body 
@@ -521,14 +553,17 @@ app.post('/checkUser', urlencodedParser, (req, res) => {
     })
 })
 app.post("/generateXLS", urlencodedParser, async (req, res) => { 
-    let data = req.body
+    let data = req.body 
     let obj = null 
     for (let x in data) { 
         obj = x
     }
     let obj_json = JSON.parse(obj)
-    let data_ = obj_json['data_'].split(':')    
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/UOB/'+data_[2]+'/'+data_[4];    
+    console.log('obj_json: ',obj_json)
+    let data_ = obj_json['data_'].split(':')   
+    let customer =''
+    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
+    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4];    
     var filename = path.basename(file);
     var mimetype = mime.lookup(file);
     res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
@@ -549,14 +584,28 @@ app.get('/getcct_data', urlencodedParser, async (req, res) => {
         }
     })
 })
+app.get('/getActitySelectd', urlencodedParser, async (req, res) => {
+    dboperations.getActitySelectd(req.query['user_id'], req.query['customerID']).then((result, err) => {
+        if (err) { 
+            console.log(err)
+        }
+        else {
+            //console.log( 'res.json(result[0]): ',res.json( result[0] ) )
+            res.json( result[0])
+        }
+    })
+})
 app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     const client = new ftp.Client()
     client.ftp.verbose = true
     var output_data = []
-    var output_data0 = {}
+    var output_data0 = {} 
+    let customer =''
+    req.query['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
-        + '/UOB'
-    var dir_ = {}
+        + '/' + customer
+    var dir_ = {} 
+    var path_ = "" 
     try {
         await client.access({
             host: "192.168.100.94",
@@ -565,17 +614,16 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
             password: "Hr$797Yl",
             secure: false
         })        
-        dir_ = await client.list(path)
-        console.log('path: ', path)
+         dir_ = await client.list(path)
+         console.log('path: ', path)
         console.log('dir_ : ', dir_)
         console.log('dir_.length : ', dir_.length)
         console.log('dir_.name : ', dir_[0].name)
-        let path_ = ""
+        
         if (dir_.length > 0) {
             for (var index = 1; index <= dir_.length; index++) {
                 path_ = 'reports/' + path + '/'//--------------------------------------------------------------------------------------------path D:/projects/gfccp_web/public/reports/
-                //path_ = 'D:/projects/gfccp_web/public/reports/' + path + '/'//-------------------------------------------------------------path D:/projects/gfccp_web/public/reports/
-                
+                //path_ = 'D:/projects/gfccp_web/public/reports/' + path + '/'//-------------------------------------------------------------path D:/projects/gfccp_web/public/reports/                
                 path_ += dir_[index - 1].name
                 console.log('path_: ', path_)
                 console.log('dir_[ index-1 ].name: ', dir_[index - 1].name)
@@ -596,7 +644,7 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         remotepath: path_,
                         files: getReportFilename(path_),
                         id_: index - 1
-                    }                    
+                    }                                              
                 }
                 else//--------------------------------------------------มีโฟลเดอร์ backend                
                 {
@@ -611,13 +659,15 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                     }                    
                 }
                 output_data.push(output_data0)
+                console.log('output_data in for loop: ', output_data)
+  
             }
         }
         console.log('output_data: ', output_data)
         //return output_data
     }
     catch (err) {
-        console.log(err)
+        console.log('err: ',err)
     }
     client.close()
     res.json(output_data)
@@ -645,7 +695,7 @@ const getReportFilename = (path_) => {
     // console.log('output0: ',output0)
     // output.push( output0 )
     return output
-}
+} 
 //------------getrole
 app.get('/getrole', urlencodedParser, (req, res) => { 
     // let type_ = ''
@@ -660,6 +710,21 @@ app.get('/getrole', urlencodedParser, (req, res) => {
             } 
         })
 })
+app.get('/getactivity_authen', urlencodedParser, (req, res) => { 
+    // let type_ = ''
+    // type_ = req.query['type_']
+    console.log( 'req: ',req )
+    console.log( 'approve_setting_id: ',req.query['approve_setting_id'] )
+    console.log( 'approve_setting_version: ',req.query['approve_setting_version'] )
+    dboperations.getactivity_authen( req.query['approve_setting_id'],req.query['approve_setting_version'] ).then((result, err) => {
+            if (err) { 
+                console.log(err) 
+            }
+            else {
+                res.json(result)
+            } 
+    })
+})
 app.get('/getuser', urlencodedParser, (req, res) => { 
     // let type_ = ''
     // type_ = req.query['type_']
@@ -668,6 +733,20 @@ app.get('/getuser', urlencodedParser, (req, res) => {
         dboperations.getUser( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
             if (err) {
                 console.log(err)
+            }
+            else {
+                res.json(result[0])
+            } 
+        })
+})
+app.get('/getuserEdit', urlencodedParser, (req, res) => { 
+    // let type_ = ''
+    // type_ = req.query['type_']
+    console.log( 'req.query[user_id]',req.query['user_id'] )
+    console.log( 'req.query[CustomerID]',req.query['CustomerID'] )
+        dboperations.getuserEdit( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
+            if (err) {
+                console.log(err) 
             }
             else {
                 res.json(result[0])
@@ -752,12 +831,16 @@ app.get('/orderlist', urlencodedParser, (req, res) => {
 //     })
 // })
 app.get('/approvelist', urlencodedParser, (req, res) => {
+    console.log('req.query[RoleId]: ',req.query['RoleId']
+    ,'req.query[CustomerID]: ',req.query['CustomerID']
+    ,'req.query[user_id]: ',req.query['user_id']
+    ,'req.query[approve_setting_id]: ',req.query['approve_setting_id'])
     dboperations.getApproveList(req.query['RoleId']
-    , req.query['CustomerID']
+    , req.query['CustomerID'] 
     , req.query['user_id']
     , req.query['approve_setting_id']).then((result, err) => {
         if (err) {
-            console.log(err) 
+            console.log(err)  
         }
         else {
             res.json(result[0])
@@ -854,6 +937,7 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
     let data_all = {
         'customerID': obj_json['CustomerID'],
         'approve_setting_id' : obj_json['approve_setting_id'], 
+        'approve_setting_version' : obj_json['approve_setting_version'], 
         'roleid': obj_json['roleid'],
         'order_category': obj_json['OrderCategoryNew'],
         'servicetype': obj_json['OrderTypeNew'],

@@ -1,6 +1,18 @@
 var config = require('../server/dbconfig');
-const sql = require('mssql'); 
+const sql = require('mssql');  
 
+async function getactivity_authen(userID) {
+    try {
+        let pool = await sql.connect(config);
+        let spGetRole = await pool.request()        
+        .input('userID', sql.Int, userID)
+        .execute("spGetRole");           
+        return spGetRole.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 async function getRole(userID) {
     try {
         let pool = await sql.connect(config);
@@ -21,6 +33,19 @@ async function getUser(userID,customerID) {
         .input('CustomerID', sql.NVarChar, customerID)
         .execute("spGetUser");           
         return spGetUser.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
+async function getuserEdit(userID,customerID) {
+    try {
+        let pool = await sql.connect(config);
+        let spGetUser_Edit = await pool.request()        
+        .input('userID', sql.Int, userID)
+        .input('CustomerID', sql.NVarChar, customerID)
+        .execute("spGetUser_Edit");           
+        return spGetUser_Edit.recordsets;
     }
     catch (error) {
         console.log(error);
@@ -79,7 +104,7 @@ async function getDownloadLink(userID) {
 }
 //------------branch data
 async function getBranchData(CustomerID,user_id) {
-    try { 
+    try {  
         let pool = await sql.connect(config);      
         let spBranchData = await pool.request()        
         .input('CustomerID', sql.NVarChar, CustomerID)
@@ -92,12 +117,12 @@ async function getBranchData(CustomerID,user_id) {
     }
 }
 async function getCashCenterBOT(CustomerID,user_id) {
-    try {
+    try { 
         let pool = await sql.connect(config);      
         let spCashCenterData = await pool.request()     
-        let CustomerID_ = CustomerID   
-        CustomerID_ = '1493f524-c52e-4c06-aee8-8ef962929242'
-        .input('CustomerID', sql.NVarChar, CustomerID_)
+        // let CustomerID_ = CustomerID   
+        // CustomerID_ = '1493f524-c52e-4c06-aee8-8ef962929242'
+        .input('CustomerID', sql.NVarChar, CustomerID)
         .input('user_id', sql.Int, user_id)
         .execute("spCashCenterData");                
         return spCashCenterData.recordsets;
@@ -119,6 +144,46 @@ async function getCashCenterData(CustomerID,user_id) {
         console.log(error);
     }
 }
+async function getactivity_authen(approve_setting_id,approve_setting_version) {
+    try { 
+        let output = null
+        console.log('approve_setting_id: ', approve_setting_id) 
+        console.log('approve_setting_version: ', approve_setting_version) 
+        let pool = await sql.connect(config);      
+        let sp_getactivity_authen = await pool.request()        
+        .input('approve_setting_id', sql.Int, approve_setting_id)
+        .input('approve_setting_version', sql.Float, approve_setting_version)
+        .execute("sp_getactivity_authen");    
+        output = sp_getactivity_authen.recordsets;
+        output = output[0]
+        output = output[0]   
+        console.log('output: ', output)         
+        return output;
+    }
+    catch (error) {
+        console.log(error); 
+    }
+}
+async function getActitySelectd(user_id,CustomerID) {
+    try { 
+        let output = null
+        console.log('user_id: ', user_id) 
+        console.log('CustomerID: ', CustomerID) 
+        let pool = await sql.connect(config);      
+        let spGetActity = await pool.request()        
+        .input('CustomerID', sql.NVarChar, CustomerID)
+        .input('user_id', sql.Int, user_id)
+        .execute("spGetActity");    
+        output = spGetActity.recordsets;
+        output = output[0]
+        //output = output[0]   
+        console.log('output: ', output)         
+        return output;
+    }
+    catch (error) {
+        console.log(error);
+    }
+}
 async function getBOT_Branch(user_id) {
     try { 
         let pool = await sql.connect(config);      
@@ -128,17 +193,6 @@ async function getBOT_Branch(user_id) {
         .execute("spBOT_Branch");                
         return spBOT_Branch.recordsets;
 
-        // let pool = await sql.connect(config);
-        // let sql_=""
-        // sql_="select * from T_Branch where customerID ='1493f524-c52e-4c06-aee8-8ef962929242' "
-        // sql_ +=" and branch_status=0"
-        // // console.log('user_id: ',user_id)
-        // // console.log('CustomerID: ',CustomerID)        
-        // let T_Branch = await pool.request()
-        // // .input('user_id', sql.NVarChar, user_id)
-        // // .input('customerID', sql.NVarChar, CustomerID)
-        // .query( sql_ );        
-        // return T_Branch.recordsets;
     }
     catch (error) {
         console.log(error);
@@ -216,7 +270,7 @@ async function getOrdersList(user_id,CustomerID) {
     }
 }
 async function getApproveList(RoleId
-    ,CustomerID
+    ,CustomerID 
     ,user_id
     ,approve_setting_id) {
     try {
@@ -536,7 +590,7 @@ async function manual_add_order(gfccp_order, type_) {
 //     catch (err) {
 //         console.log(err);
 //     }
-// }
+// } 
 async function checkUser(data_all) {
     let jobid = data_all["jobid"]
     let password = data_all["password"]
@@ -548,7 +602,7 @@ async function checkUser(data_all) {
             //.query("SELECT * from users where username = @username and password = @password");
             .execute('spCheckUser');
         return spCheckUser.recordsets;
-    }
+    } 
     catch (error) {
         console.log(error);
     }
@@ -558,6 +612,7 @@ async function add_manual_order(gfccp_order) {
     let FLOAT_NULL_ = 0
     let roleid = gfccp_order["roleid"]
     let approve_setting_id = gfccp_order["approve_setting_id"] 
+    let approve_setting_version = gfccp_order["approve_setting_version"] 
     let customerID = gfccp_order["customerID"]
     let order_category = gfccp_order["order_category"]
     let servicetype = gfccp_order["servicetype"]
@@ -731,6 +786,7 @@ async function add_manual_order(gfccp_order) {
         let pool = await sql.connect(config);
         let add_manual_order = await pool.request()
             .input('approve_setting_id', sql.Int, approve_setting_id)
+            .input('approve_setting_version', sql.Float, approve_setting_version)
             .input('customerID', sql.NVarChar, customerID)
             .input('order_category', sql.NVarChar, order_category)
             .input('servicetype', sql.NVarChar, servicetype)
@@ -1386,8 +1442,11 @@ async function update_cashstatus_order(Id, Type_,user_id) {
         console.log(err);
     }
 }
-module.exports = {
+module.exports = { 
+    getactivity_authen : getactivity_authen,
+    getActitySelectd : getActitySelectd,
     getOrdersList: getOrdersList,
+    getuserEdit: getuserEdit,
     delete_app_proc_det: delete_app_proc_det,
     getOrder: getOrder,
     getBranchData: getBranchData,
