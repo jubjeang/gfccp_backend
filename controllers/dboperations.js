@@ -1,5 +1,5 @@
 var config = require('../server/dbconfig');
-const sql = require('mssql');  
+const sql = require('mssql'); 
 
 async function getactivity_authen(userID) {
     try {
@@ -101,7 +101,7 @@ async function getDownloadLink(userID) {
     catch (error) {
         console.log(error);
     }
-}
+}  
 //------------branch data
 async function getBranchData(CustomerID,user_id) {
     try {  
@@ -127,7 +127,7 @@ async function getCashCenterBOT(CustomerID,user_id) {
         .execute("spCashCenterData");                
         return spCashCenterData.recordsets;
     } 
-    catch (error) {
+    catch (error) { 
         console.log(error);
     }
 }
@@ -235,7 +235,7 @@ async function getOrdertrackinglist() {
     catch (error) {
         console.log(error);
     }
-}
+} 
 // async function getCCT_Branch(CustomerID) {
 //     try {
 //         let pool = await sql.connect(config);
@@ -271,20 +271,22 @@ async function getOrdersList(user_id,CustomerID) {
 }
 async function getApproveList(RoleId
     ,CustomerID 
-    ,user_id
-    ,approve_setting_id) {
+    ,user_id 
+    ,approve_setting_id)     
+    {
+    console.log('RoleId: ',RoleId,'CustomerID: ',CustomerID,'user_id: ',user_id,'approve_setting_id: ',approve_setting_id)
     try {
-        let pool = await sql.connect(config);        
+        let pool = await sql.connect(config);       
         let spApprovelist = await pool.request()
         .input('customerID_', sql.NVarChar, CustomerID)
         .input('RoleId_', sql.Int, RoleId)
         .input('user_id', sql.Int, user_id)
         .input('approve_setting_id', sql.Int, approve_setting_id)
         .execute("spApprovelist");           
-        return spApprovelist.recordsets;
-    }
+        return spApprovelist.recordsets;  
+    }  
     catch (error) {
-        console.log(error);
+        console.log(error);   
     }
 }
 async function getApproveProcList(user_id) {
@@ -601,10 +603,11 @@ async function checkUser(data_all) {
             .input('password', sql.NVarChar, password)
             //.query("SELECT * from users where username = @username and password = @password");
             .execute('spCheckUser');
-        return spCheckUser.recordsets;
+        return spCheckUser.recordsets; 
     } 
     catch (error) {
         console.log(error);
+        return({error: error})
     }
 }
 async function add_manual_order(gfccp_order) {

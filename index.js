@@ -14,9 +14,19 @@ var onFinished = require('on-finished')
 const xlsx = require('xlsx')
 const iconv = require('iconv-lite')
 const csv = require('csv-parser')
-const JSFtp = require("jsftp");
+const JSFtp = require("jsftp")
+var fileName     
+// const ftp = new JSFtp({
+//     host: "192.168.100.94",
+//     port: 21,
+//     user: "svc-ftp-std",
+//     password: "Hr$797Yl",
+//     secure: false
+//   })
+// ftp.get("/path/to/excel-file.xlsx", "./excel-file.xlsx", function(hadError) {
+//     if (!hadError) console.log("File downloaded successfully!");
+// });
 
-var fileName
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         // console.log( req.file.filename ) 
@@ -189,6 +199,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
                                 if (err) {
                                     console.log(err)
+                                    res.json({error: err})
                                 }
                                 else {
                                     // console.log(result)
@@ -282,6 +293,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                             dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
                                 if (err) {
                                     console.log(err)
+                                    res.json({error: err})
                                 }
                                 else {
                                     // console.log(result)
@@ -359,6 +371,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
                                 if (err) {
                                     console.log(err)
+                                    res.json({error: err})
                                 }
                                 else {
                                     // console.log(result)
@@ -452,6 +465,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
                             dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
                                 if (err) {
                                     console.log(err)
+                                    res.json({error: err})
                                 }
                                 else {
                                     // console.log(result)
@@ -473,6 +487,7 @@ app.get('/ordertrackinglist', (req, res) => {
     dboperations.getOrdertrackinglist().then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -489,6 +504,7 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
         obj = x  
     }
     let obj_json = JSON.parse(obj)
+    //console.log('data: ',data)
     let data_ = obj_json['data_'].split(':')    
     console.log('obj_json: ',obj_json)
     let customer =''
@@ -497,13 +513,11 @@ app.post("/generateCSV",urlencodedParser, async (req, res) => {
         + '/' + customer
     console.log('req.query[customerID]: ',req.query['customerID'],'path: ',path)
     var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[3];    
-    // var filename = path.basename(file);
-    // var mimetype = mime.lookup(file);
-    res.setHeader("Content-Type", "text/csv; charset=utf-8;")
+    res.setHeader("Content-Type", "text/csv; charset=Windows-874;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
     console.log('res: ',res)
-    filestream.pipe(res);
+    filestream.pipe(res);  
     onFinished(res, () => {
         destroy(filestream) 
     })
@@ -543,9 +557,17 @@ app.post('/checkUser', urlencodedParser, (req, res) => {
         'password': obj_json['password'],
     }
     // console.log(data_all)
-    dboperations.checkUser(data_all).then((result, err) => {
+    dboperations.checkUser(data_all).then((result, err) => { 
+        // if (err) {
+        //     console.log(err)  
+        //     res.json({error: err})
+        // }
+        // else {
+        //     res.json(result[0])
+        // }
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -553,31 +575,95 @@ app.post('/checkUser', urlencodedParser, (req, res) => {
     })
 })
 app.post("/generateXLS", urlencodedParser, async (req, res) => { 
-    let data = req.body 
-    let obj = null 
-    for (let x in data) { 
-        obj = x
+
+    let data = req.body
+    let obj = null
+    for (let x in data) {
+        obj = x  
     }
     let obj_json = JSON.parse(obj)
+    //console.log('data: ',data)
+    let data_ = obj_json['data_'].split(':')    
     console.log('obj_json: ',obj_json)
-    let data_ = obj_json['data_'].split(':')   
     let customer =''
-    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4];    
-    var filename = path.basename(file);
-    var mimetype = mime.lookup(file);
-    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
-    res.setHeader('Content-Disposition', encodeURIComponent(file))
+    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
+        + '/' + customer
+   var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4]
+    console.log('file: ',file)
+    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=Windows-874;")
+    res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
-    filestream.pipe(res);
+    console.log('res: ',res)
+    filestream.pipe(res);  
     onFinished(res, () => {
-        destroy(filestream) 
-    })    
+        destroy(filestream)   
+    })
+    //----------------------------------------------------------------------------
+    // let data = req.body 
+    // let obj = null 
+    // for (let x in data) { 
+    //     obj = x
+    // }
+    // let obj_json = JSON.parse(obj)
+    // console.log('obj_json: ',obj_json)
+    // let data_ = obj_json['data_'].split(':')   
+    // let customer =''
+    // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
+    // var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4]
+    // console.log('file: ',file)
+    // const ftp = new JSFtp({
+    //     host: "192.168.100.94",
+    //     port: 21,
+    //     user: "svc-ftp-std",
+    //     password: "Hr$797Yl",
+    //     secure: false
+    // })
+    // let repmte_path =data_[0]+'/'+data_[1]+"/"+customer+"/"+data_[2]+'/'+data_[4]
+    // let filename = "./"+data_[4]
+
+    // ftp.get(repmte_path, filename, function(hadError) {
+    //     if (!hadError) console.log("File downloaded successfully!");
+    //   });
+
+    // var filename = path.basename(file);
+    // var mimetype = mime.lookup(file);
+    // res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
+    // res.setHeader('Content-Disposition', encodeURIComponent(file))
+    // var filestream = fs.createReadStream(file);
+    // filestream.pipe(res);
+    // onFinished(res, () => {
+    //     destroy(filestream) 
+    // }) 
+    
+    //----------------------------------------------------------------------------------
+    // let data = req.body 
+    // let obj = null 
+    // for (let x in data) { 
+    //     obj = x
+    // }
+    // let obj_json = JSON.parse(obj)
+    // console.log('obj_json: ',obj_json)
+    // let data_ = obj_json['data_'].split(':')   
+    // let customer =''
+    // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
+    // var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4];    
+    // var filename = path.basename(file);
+    // var mimetype = mime.lookup(file);
+    // res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
+    // res.setHeader('Content-Disposition', encodeURIComponent(file))
+    // var filestream = fs.createReadStream(file);
+    // filestream.pipe(res);
+    // onFinished(res, () => {
+    //     destroy(filestream) 
+    // }) 
+    //----------------------------------------------------------------------------------
 })
 app.get('/getcct_data', urlencodedParser, async (req, res) => {
     dboperations.getCCT_Data(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -588,6 +674,7 @@ app.get('/getActitySelectd', urlencodedParser, async (req, res) => {
     dboperations.getActitySelectd(req.query['user_id'], req.query['customerID']).then((result, err) => {
         if (err) { 
             console.log(err)
+            res.json({error: err})
         }
         else {
             //console.log( 'res.json(result[0]): ',res.json( result[0] ) )
@@ -605,7 +692,7 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
     var dir_ = {} 
-    var path_ = "" 
+    var path_ = ""  
     try {
         await client.access({
             host: "192.168.100.94",
@@ -659,15 +746,14 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                     }                    
                 }
                 output_data.push(output_data0)
-                console.log('output_data in for loop: ', output_data)
-  
+                console.log('output_data in for loop: ', output_data)  
             }
         }
         console.log('output_data: ', output_data)
         //return output_data
     }
     catch (err) {
-        console.log('err: ',err)
+        console.log('err: ',err)  
     }
     client.close()
     res.json(output_data)
@@ -696,7 +782,7 @@ const getReportFilename = (path_) => {
     // output.push( output0 )
     return output
 } 
-//------------getrole
+//------------getrole 
 app.get('/getrole', urlencodedParser, (req, res) => { 
     // let type_ = ''
     // type_ = req.query['type_']
@@ -704,6 +790,7 @@ app.get('/getrole', urlencodedParser, (req, res) => {
         dboperations.getRole( req.query['user_id'] ).then((result, err) => {
             if (err) {
                 console.log(err) 
+                res.json({error: err})
             }
             else {
                 res.json(result[0])
@@ -719,6 +806,7 @@ app.get('/getactivity_authen', urlencodedParser, (req, res) => {
     dboperations.getactivity_authen( req.query['approve_setting_id'],req.query['approve_setting_version'] ).then((result, err) => {
             if (err) { 
                 console.log(err) 
+                res.json({error: err})
             }
             else {
                 res.json(result)
@@ -733,6 +821,7 @@ app.get('/getuser', urlencodedParser, (req, res) => {
         dboperations.getUser( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
             if (err) {
                 console.log(err)
+                res.json({error: err})
             }
             else {
                 res.json(result[0])
@@ -747,6 +836,7 @@ app.get('/getuserEdit', urlencodedParser, (req, res) => {
         dboperations.getuserEdit( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
             if (err) {
                 console.log(err) 
+                res.json({error: err})
             }
             else {
                 res.json(result[0])
@@ -761,30 +851,33 @@ app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
         dboperations.getCashCenterBOT(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
             if (err) {
                 console.log(err)
+                res.json({error: err})
             }
             else {
-                res.json(result[0])
+                res.json(result[0])  
             }
         })
-    }
+    } 
     else {
         dboperations.getCashCenterData(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
             if (err) {
                 console.log(err)
+                res.json({error: err})
             }
             else {
-                res.json(result[0])
+                res.json(result[0]) 
             }
         })
     }
-})
+}) 
 app.get('/getbotbranch', urlencodedParser, (req, res) => {
     dboperations.getBOT_Branch(req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
-            res.json(result[0])
+            res.json(result[0]) 
         }
     })
 })
@@ -793,6 +886,7 @@ app.get('/getbranchdata', urlencodedParser, (req, res) => {
     dboperations.getBranchData(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -803,6 +897,7 @@ app.get('/getbranchforcash', urlencodedParser, (req, res) => {
     dboperations.getBranchForCash(req.query['CustomerID'], req.query['CCT'], req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -814,6 +909,7 @@ app.get('/orderlist', urlencodedParser, (req, res) => {
     dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -841,6 +937,7 @@ app.get('/approvelist', urlencodedParser, (req, res) => {
     , req.query['approve_setting_id']).then((result, err) => {
         if (err) {
             console.log(err)  
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -851,6 +948,7 @@ app.get('/approveProcList', urlencodedParser, (req, res) => {
     dboperations.getApproveProcList( req.query['user_id'] ).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -861,6 +959,7 @@ app.get('/get_approveProcData', urlencodedParser, (req, res) => {
     dboperations.get_approveProcData( req.query['Id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -871,16 +970,18 @@ app.get('/get_approveProcDataDet', urlencodedParser, (req, res) => {
     dboperations.get_approveProcDataDet( req.query['approve_setting_id'],req.query['version']  ).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
         }
     })
-})
+})  
 app.get('/get_pbi_url', urlencodedParser, (req, res) => {
     dboperations.get_pbi_url(req.query['pagname'], req.query['CustomerID']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -892,6 +993,7 @@ app.get('/getbanktypedata', urlencodedParser, (req, res) => {
     dboperations.getBankTypeData(req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -903,6 +1005,7 @@ app.get('/getdownloadlink', urlencodedParser, (req, res) => {
     dboperations.getDownloadLink(req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -921,6 +1024,7 @@ app.post('/add_approveProc', urlencodedParser, (req, res) => {
     dboperations.add_approveProc(obj_json).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -1248,6 +1352,7 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
     dboperations.add_manual_order(data_all).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -1574,6 +1679,7 @@ app.post('/edit_order', urlencodedParser, (req, res) => {
     dboperations.update_order(data_all).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -1595,6 +1701,7 @@ app.post('/edit_approveproc', urlencodedParser, (req, res) => {
     dboperations.update_approveproc(obj_json).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0]) 
@@ -1608,6 +1715,7 @@ app.get('/getcashorder', urlencodedParser, (req, res) => {
     dboperations.getCashOrder(req.query['Id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -1620,6 +1728,7 @@ app.get('/update_cashstatus_order', urlencodedParser, (req, res) => {
     dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_'], req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err)
+            res.json({error: err})
         }
         else {
             res.json(result[0])
@@ -1637,11 +1746,12 @@ app.get('/delete_app_proc_det', urlencodedParser, (req, res) => {
     dboperations.delete_app_proc_det(req.query['Id'],req.query['user_id']).then((result, err) => {
         if (err) {
             console.log(err) 
+            res.json({error: err})
         }
         else {
             res.json(result[0]) 
         }
     })
-})
+}) 
 app.listen(3344, () => console.log("running on localhost:3344"))
 
