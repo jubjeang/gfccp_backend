@@ -1,57 +1,59 @@
 var config = require('../server/dbconfig');
-const sql = require('mssql'); 
+const sql = require('mssql');
 
 async function getactivity_authen(userID) {
     try {
         let pool = await sql.connect(config);
-        let spGetRole = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .execute("spGetRole");           
+        let spGetRole = await pool.request()
+            .input('userID', sql.Int, userID)
+            .execute("spGetRole");
         return spGetRole.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error);
+        return ( [ { error: error } ] )
     }
 }
 async function getRole(userID) {
     try {
         let pool = await sql.connect(config);
-        let spGetRole = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .execute("spGetRole");           
+        let spGetRole = await pool.request()
+            .input('userID', sql.Int, userID)
+            .execute("spGetRole");
         return spGetRole.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error);
     }
 }
-async function getUser(userID,customerID) {
+async function getUser(userID, customerID) {
     try {
         let pool = await sql.connect(config);
-        let spGetUser = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .input('CustomerID', sql.NVarChar, customerID)
-        .execute("spGetUser");           
+        let spGetUser = await pool.request()
+            .input('userID', sql.Int, userID)
+            .input('CustomerID', sql.NVarChar, customerID)
+            .execute("spGetUser");
         return spGetUser.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error);
     }
 }
-async function getuserEdit(userID,customerID) {
+async function getuserEdit(userID, customerID) {
     try {
         let pool = await sql.connect(config);
-        let spGetUser_Edit = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .input('CustomerID', sql.NVarChar, customerID)
-        .execute("spGetUser_Edit");           
+        let spGetUser_Edit = await pool.request()
+            .input('userID', sql.Int, userID)
+            .input('CustomerID', sql.NVarChar, customerID)
+            .execute("spGetUser_Edit");
         return spGetUser_Edit.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function get_pbi_url(pagename,CustomerID) {
+async function get_pbi_url(pagename, CustomerID) {
     try {
         let pool = await sql.connect(config);
         let T_Graph_Info = await pool.request()
@@ -62,150 +64,160 @@ async function get_pbi_url(pagename,CustomerID) {
 
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function getBankTypeData(userID) {
     try {
         let pool = await sql.connect(config);
-        let spBankType = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .execute("spBankType");           
+        let spBankType = await pool.request()
+            .input('userID', sql.Int, userID)
+            .execute("spBankType");
         return spBankType.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getCCT_Data(CustomerID,user_id) {
+async function getCCT_Data(CustomerID, user_id) {
     try {
         let pool = await sql.connect(config);
-        let spGetCCT_Data = await pool.request() 
-        .input('CustomerID', sql.NVarChar, CustomerID)       
-        .input('user_id', sql.Int, user_id)
-        .execute("spGetCCT_Data");           
+        let spGetCCT_Data = await pool.request()
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('user_id', sql.Int, user_id)
+            .execute("spGetCCT_Data");
         return spGetCCT_Data.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function getDownloadLink(userID) {
     try {
         let pool = await sql.connect(config);
-        let spDownloadLink = await pool.request()        
-        .input('userID', sql.Int, userID)
-        .execute("spDownloadLink");           
+        let spDownloadLink = await pool.request()
+            .input('userID', sql.Int, userID)
+            .execute("spDownloadLink");
         return spDownloadLink.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
-}  
+}
 //------------branch data
-async function getBranchData(CustomerID,user_id) {
-    try {  
-        let pool = await sql.connect(config);      
-        let spBranchData = await pool.request()        
-        .input('CustomerID', sql.NVarChar, CustomerID)
-        .input('user_id', sql.Int, user_id)
-        .execute("spBranchData");       
+async function getBranchData(CustomerID, user_id) {
+    try {
+        let pool = await sql.connect(config);
+        let spBranchData = await pool.request()
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('user_id', sql.Int, user_id)
+            .execute("spBranchData");
         return spBranchData.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getCashCenterBOT(CustomerID,user_id) {
-    try { 
-        let pool = await sql.connect(config);      
-        let spCashCenterData = await pool.request()     
-        // let CustomerID_ = CustomerID   
-        // CustomerID_ = '1493f524-c52e-4c06-aee8-8ef962929242'
-        .input('CustomerID', sql.NVarChar, CustomerID)
-        .input('user_id', sql.Int, user_id)
-        .execute("spCashCenterData");                
-        return spCashCenterData.recordsets;
-    } 
-    catch (error) { 
-        console.log(error);
-    }
-}
-async function getCashCenterData(CustomerID,user_id) {
+async function getCashCenterBOT(CustomerID, user_id) {
     try {
-        let pool = await sql.connect(config);      
-        let spCashCenterData = await pool.request()        
-        .input('CustomerID', sql.NVarChar, CustomerID)
-        .input('user_id', sql.Int, user_id)
-        .execute("spCashCenterData");                
+        let pool = await sql.connect(config);
+        let spCashCenterData = await pool.request()
+            // let CustomerID_ = CustomerID   
+            // CustomerID_ = '1493f524-c52e-4c06-aee8-8ef962929242'
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('user_id', sql.Int, user_id)
+            .execute("spCashCenterData");
         return spCashCenterData.recordsets;
-    } 
+    }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getactivity_authen(approve_setting_id,approve_setting_version) {
-    try { 
+async function getCashCenterData(CustomerID, user_id) {
+    try {
+        let pool = await sql.connect(config);
+        let spCashCenterData = await pool.request()
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('user_id', sql.Int, user_id)
+            .execute("spCashCenterData");
+        return spCashCenterData.recordsets;
+    }
+    catch (error) {
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
+    }
+}
+async function getactivity_authen(approve_setting_id, approve_setting_version) {
+    try {
         let output = null
-        console.log('approve_setting_id: ', approve_setting_id) 
-        console.log('approve_setting_version: ', approve_setting_version) 
-        let pool = await sql.connect(config);      
-        let sp_getactivity_authen = await pool.request()        
-        .input('approve_setting_id', sql.Int, approve_setting_id)
-        .input('approve_setting_version', sql.Float, approve_setting_version)
-        .execute("sp_getactivity_authen");    
+        console.log('approve_setting_id: ', approve_setting_id)
+        console.log('approve_setting_version: ', approve_setting_version)
+        let pool = await sql.connect(config);
+        let sp_getactivity_authen = await pool.request()
+            .input('approve_setting_id', sql.Int, approve_setting_id)
+            .input('approve_setting_version', sql.Float, approve_setting_version)
+            .execute("sp_getactivity_authen");
         output = sp_getactivity_authen.recordsets;
         output = output[0]
-        output = output[0]   
-        console.log('output: ', output)         
+        output = output[0]
+        console.log('output: ', output)
         return output;
     }
     catch (error) {
-        console.log(error); 
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getActitySelectd(user_id,CustomerID) {
-    try { 
+async function getActitySelectd(user_id, CustomerID) {
+    try {
         let output = null
-        console.log('user_id: ', user_id) 
-        console.log('CustomerID: ', CustomerID) 
-        let pool = await sql.connect(config);      
-        let spGetActity = await pool.request()        
-        .input('CustomerID', sql.NVarChar, CustomerID)
-        .input('user_id', sql.Int, user_id)
-        .execute("spGetActity");    
+        console.log('user_id: ', user_id)
+        console.log('CustomerID: ', CustomerID)
+        let pool = await sql.connect(config);
+        let spGetActity = await pool.request()
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('user_id', sql.Int, user_id)
+            .execute("spGetActity");
         output = spGetActity.recordsets;
         output = output[0]
         //output = output[0]   
-        console.log('output: ', output)         
+        console.log('output: ', output)
         return output;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function getBOT_Branch(user_id) {
-    try { 
-        let pool = await sql.connect(config);      
-        let spBOT_Branch = await pool.request()        
-        .input('CustomerID', sql.NVarChar, '1493f524-c52e-4c06-aee8-8ef962929242')
-        .input('user_id', sql.Int, user_id)
-        .execute("spBOT_Branch");                
+    try {
+        let pool = await sql.connect(config);
+        let spBOT_Branch = await pool.request()
+            .input('CustomerID', sql.NVarChar, '1493f524-c52e-4c06-aee8-8ef962929242')
+            .input('user_id', sql.Int, user_id)
+            .execute("spBOT_Branch");
         return spBOT_Branch.recordsets;
 
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getBranchForCash(CustomerID,CCT,user_id) {
+async function getBranchForCash(CustomerID, CCT, user_id) {
     try {
-        let pool = await sql.connect(config);      
-        let spBranchForCash = await pool.request()        
-        .input('CustomerID', sql.NVarChar, CustomerID)
-        .input('CCT', sql.NVarChar, CCT)
-        .input('user_id', sql.Int, user_id)
-        .execute("spBranchForCash");                
+        let pool = await sql.connect(config);
+        let spBranchForCash = await pool.request()
+            .input('CustomerID', sql.NVarChar, CustomerID)
+            .input('CCT', sql.NVarChar, CCT)
+            .input('user_id', sql.Int, user_id)
+            .execute("spBranchForCash");
         return spBranchForCash.recordsets;
         // let pool = await sql.connect(config);
         // let sql_=""
@@ -218,24 +230,26 @@ async function getBranchForCash(CustomerID,CCT,user_id) {
         // let T_Branch = await pool.request()
         // .input('user_id', sql.NVarChar, user_id)
         // .input('customerID', sql.NVarChar, CustomerID)
-       // .query( sql_ );        
+        // .query( sql_ );        
         //return T_Branch.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
-} 
-async function getOrdertrackinglist() {
-    try {
-        let pool = await sql.connect(config);
-        let products = await pool.request().query("select c.AutoID,c.TaskId,c.CustomerID,c.CIT_Type,c.[date],c.route_name,c.CL_name,c.CD_name,c.cct_code,c.cct_branch,b.branch_name  from [dbo].[CIT_status_orderCCP] c inner join T_CCT_Monthly_Branch b on c.TaskId=b.TaskId where c.[date]='2022-08-22' and c.CustomerID='2c164463-ef08-4cb6-a200-08e70aece9ae' and c.cct_code='01' and c.route_name='Bangkok-CIT-09'  order by AutoID;");
-        // let products = await pool.request().query("select * from gfccp_order where branch_name<>'ยอดรวม' order by AutoID;");
-        return products.recordsets;
-    }
-    catch (error) {
-        console.log(error);
-    }
-} 
+}
+// async function getOrdertrackinglist() {
+//     try {
+//         let pool = await sql.connect(config);
+//         let products = await pool.request().query("select c.AutoID,c.TaskId,c.CustomerID,c.CIT_Type,c.[date],c.route_name,c.CL_name,c.CD_name,c.cct_code,c.cct_branch,b.branch_name  from [dbo].[CIT_status_orderCCP] c inner join T_CCT_Monthly_Branch b on c.TaskId=b.TaskId where c.[date]='2022-08-22' and c.CustomerID='2c164463-ef08-4cb6-a200-08e70aece9ae' and c.cct_code='01' and c.route_name='Bangkok-CIT-09'  order by AutoID;");
+//         // let products = await pool.request().query("select * from gfccp_order where branch_name<>'ยอดรวม' order by AutoID;");
+//         return products.recordsets;
+//     }
+//     catch (error) {
+//         console.log('error: ', error)
+//         return ( [ { error: error } ] );
+//     }
+// }
 // async function getCCT_Branch(CustomerID) {
 //     try {
 //         let pool = await sql.connect(config);
@@ -250,83 +264,97 @@ async function getOrdertrackinglist() {
 //         return T_Branch.recordsets;
 //     }
 //     catch (error) {
-//         console.log(error);
+//         console.log('error: ',error)
+//return ( [ { error: error } ] );
 //     }
 // }
-async function getOrdersList(user_id,CustomerID) {
+async function getOrdersList(user_id, CustomerID) {
     try {
         let pool = await sql.connect(config);
-        console.log('user_id: ',user_id)
-        console.log('CustomerID: ',CustomerID)
+        console.log('user_id: ', user_id)
+        console.log('CustomerID: ', CustomerID)
         // let products = await pool.request().query("select o.*,(SELECT top 1 b.gfc_cct from [dbo].[T_Branch] b where gfc_cct is not null and b.branch_id = o.branch_code ) as cash_center from gfccp_order o where LTRIM(RTRIM(row_type))<>'summary' and ( convert(varchar, order_date, 105)  = convert(varchar, GETDATE(), 105) or convert(varchar, order_date, 105)  = convert(varchar, DATEADD(day,1,GETDATE()), 105) ) and o.[status]='Y' order by AutoID desc");
-        let products = await pool.request()
-        .input('user_id', sql.NVarChar, user_id)
-        .input('customerID', sql.NVarChar, CustomerID)
-        .query("select * from vOrdersList where createby=@user_id and customerID=@customerID  order by AutoID desc");        
-        return products.recordsets;
+        let spOrderlist = await pool.request()
+            .input('user_id', sql.NVarChar, user_id)
+            .input('customerID_', sql.NVarChar, CustomerID)
+            .execute("spOrderlist");
+        return spOrderlist.recordsets;
     }
     catch (error) {
-        console.log(error);
-    }
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
+    } 
 }
 async function getApproveList(RoleId
-    ,CustomerID 
-    ,user_id 
-    ,approve_setting_id)     
-    {
-    console.log('RoleId: ',RoleId,'CustomerID: ',CustomerID,'user_id: ',user_id,'approve_setting_id: ',approve_setting_id)
+    , CustomerID
+    , user_id
+    , approve_setting_id 
+    , approve_setting_version
+    ) {
+    console.log(
+    'getApproveList RoleId: ', RoleId
+    , 'CustomerID: ', CustomerID
+    , 'user_id: ', user_id
+    , 'approve_setting_id: ', approve_setting_id
+    , 'approve_setting_version: ', approve_setting_version
+    )
     try {
-        let pool = await sql.connect(config);       
+        let pool = await sql.connect(config);
         let spApprovelist = await pool.request()
-        .input('customerID_', sql.NVarChar, CustomerID)
-        .input('RoleId_', sql.Int, RoleId)
-        .input('user_id', sql.Int, user_id)
-        .input('approve_setting_id', sql.Int, approve_setting_id)
-        .execute("spApprovelist");           
-        return spApprovelist.recordsets;  
-    }  
+            .input('customerID_', sql.NVarChar, CustomerID)
+            .input('RoleId_', sql.Int, RoleId)
+            .input('user_id', sql.Int, user_id)
+            .input('approve_setting_id', sql.Int, approve_setting_id)
+            .input('approve_setting_version', sql.Float, approve_setting_version)            
+            .execute("spApprovelist");
+        return spApprovelist.recordsets;
+    }
     catch (error) {
-        console.log(error);   
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function getApproveProcList(user_id) {
     try {
         let pool = await sql.connect(config);
         let spApproveProclist = await pool.request()
-        .input('user_id', sql.NVarChar, user_id)        
-        .execute("spApproveProclist");   
+            .input('user_id', sql.NVarChar, user_id)
+            .execute("spApproveProclist");
         // .query("select * from vOrdersList where cashstatus=@cashstatus and customerID=@customerID  order by AutoID desc");      
         return spApproveProclist.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function get_approveProcData(Id) {
     try {
         let pool = await sql.connect(config);
         let spApproveProcData = await pool.request()
-        .input('Id', sql.NVarChar, Id)        
-        .execute("spApproveProcData");           
+            .input('Id', sql.NVarChar, Id)
+            .execute("spApproveProcData");
         return spApproveProcData.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function get_approveProcDataDet(Id,version) {
+async function get_approveProcDataDet(Id, version) {
     try {
         let pool = await sql.connect(config);
         let spApproveProcDataDet = await pool.request()
-        .input('approve_setting_id', sql.NVarChar, Id)
-        .input('version', sql.Float, version)
-        .execute("spApproveProcDataDet");      
-        console.log('Id: ',Id)
-        console.log('version: ',version)     
+            .input('approve_setting_id', sql.NVarChar, Id)
+            .input('version', sql.Float, version)
+            .execute("spApproveProcDataDet");
+        console.log('Id: ', Id)
+        console.log('version: ', version)
         return spApproveProcDataDet.recordsets;
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function getOrder(orderId) {
@@ -339,10 +367,11 @@ async function getOrder(orderId) {
 
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
-async function getCashOrder(Id) {  
+async function getCashOrder(Id) {
     try {
         let pool = await sql.connect(config);
         let product = await pool.request()
@@ -352,7 +381,8 @@ async function getCashOrder(Id) {
 
     }
     catch (error) {
-        console.log(error);
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
     }
 }
 async function manual_add_order(gfccp_order, type_) {
@@ -385,7 +415,7 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('pcs_note_uncount_100', sql.Float, gfccp_order.pcs_note_uncount_100)
                 .input('pcs_note_uncount_50', sql.Float, gfccp_order.pcs_note_uncount_50)
                 .input('pcs_note_uncount_20', sql.Float, gfccp_order.pcs_note_uncount_20)
-                .input('pcs_note_uncount_10', sql.Float, gfccp_order.pcs_note_uncount_10)    
+                .input('pcs_note_uncount_10', sql.Float, gfccp_order.pcs_note_uncount_10)
 
                 .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
                 .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
@@ -399,8 +429,8 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('unit_coin_fit_2', sql.NVarChar, gfccp_order.unit_coin_fit_2)
                 .input('unit_coin_fit_1', sql.NVarChar, gfccp_order.unit_coin_fit_1)
                 .input('unit_coin_fit_05', sql.NVarChar, gfccp_order.unit_coin_fit_05)
-                .input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)   
-                
+                .input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)
+
                 .input('pcs_coin_fit_10', sql.Float, gfccp_order.pcs_coin_fit_10)
                 .input('pcs_coin_fit_5', sql.Float, gfccp_order.pcs_coin_fit_5)
                 .input('pcs_coin_fit_2', sql.Float, gfccp_order.pcs_coin_fit_2)
@@ -468,7 +498,7 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('unit_note_new_20', sql.NVarChar, gfccp_order.unit_note_new_20)
                 .input('unit_note_fit_20', sql.NVarChar, gfccp_order.unit_note_fit_20)
                 .input('unit_note_new_10', sql.NVarChar, gfccp_order.unit_note_new_10)
-                .input('unit_note_fit_10', sql.NVarChar, gfccp_order.unit_note_fit_10)                
+                .input('unit_note_fit_10', sql.NVarChar, gfccp_order.unit_note_fit_10)
 
                 .input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
                 .input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
@@ -482,8 +512,8 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('unit_coin_fit_2', sql.NVarChar, gfccp_order.unit_coin_fit_2)
                 .input('unit_coin_fit_1', sql.NVarChar, gfccp_order.unit_coin_fit_1)
                 .input('unit_coin_fit_05', sql.NVarChar, gfccp_order.unit_coin_fit_05)
-                .input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)   
-                
+                .input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)
+
                 .input('pcs_coin_fit_10', sql.Float, gfccp_order.pcs_coin_fit_10)
                 .input('pcs_coin_fit_5', sql.Float, gfccp_order.pcs_coin_fit_5)
                 .input('pcs_coin_fit_2', sql.Float, gfccp_order.pcs_coin_fit_2)
@@ -497,7 +527,7 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('order_category', sql.NVarChar, gfccp_order.order_category)
                 .input('servicetype', sql.NVarChar, gfccp_order.servicetype)
                 .input('customer_no', sql.NVarChar, gfccp_order.customer_no)
-                .input('customerID', sql.NVarChar, gfccp_order.customerID)                
+                .input('customerID', sql.NVarChar, gfccp_order.customerID)
                 .input('row_type', sql.NVarChar, gfccp_order.row_type)
                 .input('attach_file', sql.NVarChar, gfccp_order.attach_file)
                 .input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
@@ -505,9 +535,9 @@ async function manual_add_order(gfccp_order, type_) {
                 .input('approve_setting_id', sql.Int, gfccp_order.approve_setting_id)
                 .input('createby', sql.NVarChar, gfccp_order.createby)
                 .execute('add_gfccp_order_withdraw');
-                output = add_gfccp_order_withdraw.recordsets;
+            output = add_gfccp_order_withdraw.recordsets;
         }
-        return output; 
+        return output;
     }
     catch (err) {
         console.log(err);
@@ -603,19 +633,20 @@ async function checkUser(data_all) {
             .input('password', sql.NVarChar, password)
             //.query("SELECT * from users where username = @username and password = @password");
             .execute('spCheckUser');
-        return spCheckUser.recordsets; 
-    } 
+        return spCheckUser.recordsets;
+    }
     catch (error) {
-        console.log(error);
-        return({error: error})
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
+
     }
 }
 async function add_manual_order(gfccp_order) {
     let NULL_ = null
     let FLOAT_NULL_ = 0
     let roleid = gfccp_order["roleid"]
-    let approve_setting_id = gfccp_order["approve_setting_id"] 
-    let approve_setting_version = gfccp_order["approve_setting_version"] 
+    let approve_setting_id = gfccp_order["approve_setting_id"]
+    let approve_setting_version = gfccp_order["approve_setting_version"]
     let customerID = gfccp_order["customerID"]
     let order_category = gfccp_order["order_category"]
     let servicetype = gfccp_order["servicetype"]
@@ -951,7 +982,7 @@ async function add_manual_order(gfccp_order) {
             .input('total_by_branch', sql.Float, tbGrandTotalAmount)
             .input('row_type', sql.NVarChar, row_type)
             .input('input_type', sql.NVarChar, input_type)
-            .input('roleid', sql.Int, roleid)            
+            .input('roleid', sql.Int, roleid)
             .input('createby', sql.NVarChar, user_id)
             .execute('add_manual_order');
         return add_manual_order.recordsets;
@@ -965,19 +996,19 @@ async function add_approveProc(data) {
 
     let ap_name = data["ap_name"]
     //let branchtocash =  data["BranchToCash"] === "true" ? '1' : '0'
-    let branchtocash =  data["BranchToCash"]
-    let cashtocash =  data["CashToCash"]
-    let bottocash =  data["BOTToCash"]
-    let branchtobranch =  data["BranchToBranch"]
-    let cashtobranch =  data["CashToBranch"]
-    let cashtobot =  data["CashToBOT"]
-    let AllRowsDet = parseInt(data['AllRowsDet'])     
-    let gfc_cct_code =  data["gfc_cct_code"]
+    let branchtocash = data["BranchToCash"]
+    let cashtocash = data["CashToCash"]
+    let bottocash = data["BOTToCash"]
+    let branchtobranch = data["BranchToBranch"]
+    let cashtobranch = data["CashToBranch"]
+    let cashtobot = data["CashToBOT"]
+    let AllRowsDet = parseInt(data['AllRowsDet'])
+    let gfc_cct_code = data["gfc_cct_code"]
     let user_id = data["user_id"]
     let CustomerID = data["CustomerID"]
     let output_ = null
     let output = null
-    let approveProcId = 0 
+    let approveProcId = 0
     try {
         let pool = await sql.connect(config);
         let add_approveProc = await pool.request()
@@ -991,29 +1022,28 @@ async function add_approveProc(data) {
             .input('customerID', sql.NVarChar, CustomerID)
             .input('createby', sql.NVarChar, user_id)
             .execute('add_approveProc');
-            output_ = add_approveProc.recordsets
-            console.log( 'output: ',output_ )
-            output_ = output_[0] 
-            output = output_[0]
-            approveProcId = output.id 
-            let data_ = approveProcId.split(':')
-            // output = output
-            //output_ = json(output)  
-            console.log( 'output: ',output.id )
-            for (var index = 1; index <= AllRowsDet; index++) 
-            {
-                let add_approveProc_det = await pool.request()
-                .input('approve_setting_id', sql.Int, data_[0])                
-                .input('roleid', sql.NVarChar, data["RoleId_"+index])
+        output_ = add_approveProc.recordsets
+        console.log('output: ', output_)
+        output_ = output_[0]
+        output = output_[0]
+        approveProcId = output.id
+        let data_ = approveProcId.split(':')
+        // output = output
+        //output_ = json(output)  
+        console.log('output: ', output.id)
+        for (var index = 1; index <= AllRowsDet; index++) {
+            let add_approveProc_det = await pool.request()
+                .input('approve_setting_id', sql.Int, data_[0])
+                .input('roleid', sql.NVarChar, data["RoleId_" + index])
                 .input('version', sql.Int, data_[1])
-                .input('rolename', sql.NVarChar, data["RoleName_"+index])
-                .input('userid', sql.NVarChar, data["UserId_"+index])
-                .input('username', sql.NVarChar, data["UserName_"+index])                
+                .input('rolename', sql.NVarChar, data["RoleName_" + index])
+                .input('userid', sql.NVarChar, data["UserId_" + index])
+                .input('username', sql.NVarChar, data["UserName_" + index])
                 .input('createby', sql.NVarChar, user_id)
                 .execute('add_approveProc_det');
-                output_ = add_approveProc_det.recordsets
-            } 
-            return output_
+            output_ = add_approveProc_det.recordsets
+        }
+        return output_
     }
     catch (err) {
         console.log(err);
@@ -1367,13 +1397,13 @@ async function update_order(gfccp_order) {
     //return add_manual_order.recordsets
 }
 async function update_approveproc(data) {
-    let branchtocash =  data["branchtocash"]
-    let cashtocash =  data["cashtocash"]
-    let bottocash =  data["bottocash"]
-    let branchtobranch =  data["branchtobranch"]
-    let cashtobranch =  data["cashtobranch"]
-    let cashtobot =  data["cashtobot"]
-    let AllRowsDet = parseInt(data['AllRowsDet']) 
+    let branchtocash = data["branchtocash"]
+    let cashtocash = data["cashtocash"]
+    let bottocash = data["bottocash"]
+    let branchtobranch = data["branchtobranch"]
+    let cashtobranch = data["cashtobranch"]
+    let cashtobot = data["cashtobot"]
+    let AllRowsDet = parseInt(data['AllRowsDet'])
     let output_ = null
     let output_2 = null
     try {
@@ -1390,54 +1420,53 @@ async function update_approveproc(data) {
             .input('modifyby', sql.NVarChar, data["user_id"])
             .input('customerID', sql.NVarChar, data["CustomerID"])
             .execute('update_approveproc');
-            output_ = update_approveproc.recordsets[0]
-            output_ = parseInt( output_[0] .newid_ )
-            console.log('output_: ',output_)
-            for (var index = 1; index <= AllRowsDet; index++) 
-            { 
-                console.log('output_: ',output_)
-                console.log( 'data["ddlRoleEditId_'+index+'"]: ',data["ddlRoleEditId_"+index] )
-                console.log( 'data["ddlRoleEditName_'+index+'"]: ',data["ddlRoleEditName_"+index] )
-                console.log( 'data["ddlUserEditId_'+index+'"]: ',data["ddlUserEditId_"+index] )
-                console.log( 'data["ddlUserEditName_'+index+'"]: ',data["ddlUserEditName_"+index] )
-                console.log( 'data["user_id"]: ',data["user_id"] )
-                let update_approveproc_det = await pool.request()                
+        output_ = update_approveproc.recordsets[0]
+        output_ = parseInt(output_[0].newid_)
+        console.log('output_: ', output_)
+        for (var index = 1; index <= AllRowsDet; index++) {
+            console.log('output_: ', output_)
+            console.log('data["ddlRoleEditId_' + index + '"]: ', data["ddlRoleEditId_" + index])
+            console.log('data["ddlRoleEditName_' + index + '"]: ', data["ddlRoleEditName_" + index])
+            console.log('data["ddlUserEditId_' + index + '"]: ', data["ddlUserEditId_" + index])
+            console.log('data["ddlUserEditName_' + index + '"]: ', data["ddlUserEditName_" + index])
+            console.log('data["user_id"]: ', data["user_id"])
+            let update_approveproc_det = await pool.request()
                 .input('id_approve_setting', sql.Int, output_)
                 // .input('Id', sql.Int, data["ApproveProcDetId"+index])
-                .input('roleid', sql.Int, parseInt( data["ddlRoleEditId_"+index] ) )
-                .input('rolename', sql.NVarChar, data["ddlRoleEditName_"+index])
-                .input('userid', sql.Int, parseInt( data["ddlUserEditId_"+index] ) )
-                .input('username', sql.NVarChar, data["ddlUserEditName_"+index])                
+                .input('roleid', sql.Int, parseInt(data["ddlRoleEditId_" + index]))
+                .input('rolename', sql.NVarChar, data["ddlRoleEditName_" + index])
+                .input('userid', sql.Int, parseInt(data["ddlUserEditId_" + index]))
+                .input('username', sql.NVarChar, data["ddlUserEditName_" + index])
                 .input('modifyby', sql.NVarChar, data["user_id"])
                 .execute('update_approveproc_det');
-                output_2 = update_approveproc_det.recordsets 
-            } 
-            return output_
+            output_2 = update_approveproc_det.recordsets
+        }
+        return output_
     }
     catch (err) {
         console.log(err);
-    }    
+    }
 }
-async function delete_app_proc_det(Id,user_id) { 
+async function delete_app_proc_det(Id, user_id) {
     try {
         let pool = await sql.connect(config);
         let delete_app_proc_det = await pool.request()
             .input('Id', sql.Int, Id)
             .input('modifyby', sql.Int, user_id)
-            .execute('delete_app_proc_det');           
-        return delete_app_proc_det.recordsets 
+            .execute('delete_app_proc_det');
+        return delete_app_proc_det.recordsets
     }
     catch (err) {
         console.log(err);
-    }    
+    }
 }
-async function update_cashstatus_order(Id, Type_,user_id) {
-    try {  
+async function update_cashstatus_order(Id, Type_, user_id) {
+    try {
         let pool = await sql.connect(config);
         let update_cashstatus_order = await pool.request()
-            .input('Id_', sql.Int, Id) 
+            .input('Id_', sql.Int, Id)
             .input('Type_', sql.NVarChar, Type_)
-            .input('user_id', sql.Int, user_id)            
+            .input('user_id', sql.NVarChar, user_id)
             .execute('update_cashstatus_order');
         return update_cashstatus_order.recordsets;
     }
@@ -1445,9 +1474,9 @@ async function update_cashstatus_order(Id, Type_,user_id) {
         console.log(err);
     }
 }
-module.exports = { 
-    getactivity_authen : getactivity_authen,
-    getActitySelectd : getActitySelectd,
+module.exports = {
+    getactivity_authen: getactivity_authen,
+    getActitySelectd: getActitySelectd, 
     getOrdersList: getOrdersList,
     getuserEdit: getuserEdit,
     delete_app_proc_det: delete_app_proc_det,
@@ -1455,22 +1484,22 @@ module.exports = {
     getBranchData: getBranchData,
     getCashCenterData: getCashCenterData,
     add_manual_order: add_manual_order,
-    getOrdertrackinglist: getOrdertrackinglist,
+    // getOrdertrackinglist: getOrdertrackinglist,
     checkUser: checkUser,
     getCashOrder: getCashOrder,
     update_cashstatus_order: update_cashstatus_order,
     update_order: update_order,
-    manual_add_order : manual_add_order,
-    get_pbi_url : get_pbi_url,
+    manual_add_order: manual_add_order,
+    get_pbi_url: get_pbi_url,
     getApproveList: getApproveList,
     getApproveProcList: getApproveProcList,
-    getBankTypeData : getBankTypeData,
+    getBankTypeData: getBankTypeData,
     getDownloadLink: getDownloadLink,
     getBOT_Branch: getBOT_Branch,
     getBranchForCash: getBranchForCash,
     getCashCenterBOT: getCashCenterBOT,
     getCCT_Data: getCCT_Data,
-    getRole : getRole,
+    getRole: getRole,
     getUser: getUser,
     add_approveProc: add_approveProc,
     get_approveProcData: get_approveProcData,

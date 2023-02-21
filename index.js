@@ -10,22 +10,9 @@ var fs = require('fs');
 var mime = require('mime');
 var contentDisposition = require('content-disposition')
 var destroy = require('destroy')
-var onFinished = require('on-finished') 
-const xlsx = require('xlsx')
+var onFinished = require('on-finished')
 const iconv = require('iconv-lite')
-const csv = require('csv-parser')
-const JSFtp = require("jsftp")
-var fileName     
-// const ftp = new JSFtp({
-//     host: "192.168.100.94",
-//     port: 21,
-//     user: "svc-ftp-std",
-//     password: "Hr$797Yl",
-//     secure: false
-//   })
-// ftp.get("/path/to/excel-file.xlsx", "./excel-file.xlsx", function(hadError) {
-//     if (!hadError) console.log("File downloaded successfully!");
-// });
+var fileName
 
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
@@ -60,6 +47,18 @@ const checkvalue = (value_, type_) => {
         }
     }
     return returnValue
+}
+const checkcustomer = (value_) => { 
+    if( value_ === '2c164463-ef08-4cb6-a200-08e70aece9ae')
+    {
+        return 'GSB'
+    } else if( value_ === '38bfc1b0-e86e-48b8-9a28-afbeb01770ef')
+    {
+        return 'UOB'   
+    } else if( value_ === 'ea0087c9-4172-4c03-92c5-4cc0cd9ac62d')
+    {
+        return 'CIMB'
+    }
 }
 const check_pcs = (value_, type_) => {
     let returnValue
@@ -98,7 +97,7 @@ const check_pcs = (value_, type_) => {
         returnValue = (value_ !== '') && (value_ !== null) ? parseFloat(value_.toString().replaceAll(',', ''), 10) / 1000 / 0.25 : 0.00
     }
     return returnValue
-} 
+}
 app.post('/upload', upload.single('file'), (req, res) => {
     res.json({
         file: req.file,
@@ -127,7 +126,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
     let attach_file_origin = req.file.originalname
     let roleid = req.body.roleid
     let data_ = {}
-    let NULL_ = null     
+    let NULL_ = null
     xlsxFile('./uploads/' + fileName).then((rows) => {
         for (i in rows) {
             if (i >= 2) {
@@ -193,13 +192,13 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
                                 'roleid': roleid,
-                                'approve_setting_id' : req.body.approve_setting_id,
+                                'approve_setting_id': req.body.approve_setting_id,
                                 'createby': user_id,
                             }
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
                                 if (err) {
-                                    console.log(err)
-                                    res.json({error: err})
+                                    console.log('error: ', err)
+                                    res.json({ error: err })
                                 }
                                 else {
                                     // console.log(result)
@@ -287,13 +286,13 @@ app.post('/upload', upload.single('file'), (req, res) => {
                                 'attach_file': fileName,
                                 'attach_file_origin': attach_file_origin,
                                 'roleid': roleid,
-                                'approve_setting_id' : req.body.approve_setting_id,
+                                'approve_setting_id': req.body.approve_setting_id,
                                 'createby': user_id,
                             }
                             dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
                                 if (err) {
-                                    console.log(err)
-                                    res.json({error: err})
+                                    console.log('error: ', err)
+                                    res.json({ error: err })
                                 }
                                 else {
                                     // console.log(result)
@@ -370,8 +369,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
                             }
                             dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
                                 if (err) {
-                                    console.log(err)
-                                    res.json({error: err})
+                                    console.log('error: ', err)
+                                    res.json({ error: err })
                                 }
                                 else {
                                     // console.log(result)
@@ -464,8 +463,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
                             dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
                                 if (err) {
-                                    console.log(err)
-                                    res.json({error: err})
+                                    console.log('error: ', err)
+                                    res.json({ error: err })
                                 }
                                 else {
                                     // console.log(result)
@@ -486,8 +485,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
 app.get('/ordertrackinglist', (req, res) => {
     dboperations.getOrdertrackinglist().then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -496,174 +495,147 @@ app.get('/ordertrackinglist', (req, res) => {
 })
 // create application/x-www-form-urlencoded parser
 var bodyParser = require('body-parser');
-var urlencodedParser = bodyParser.urlencoded({ extended: false }) 
-app.post("/generateCSV",urlencodedParser, async (req, res) => { 
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
+app.post("/generateCSV", urlencodedParser, async (req, res) => {
     let data = req.body
     let obj = null
     for (let x in data) {
-        obj = x  
-    }
-    let obj_json = JSON.parse(obj)
-    //console.log('data: ',data)
-    let data_ = obj_json['data_'].split(':')    
-    console.log('obj_json: ',obj_json)
-    let customer =''
-    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
-    var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
-        + '/' + customer
-    console.log('req.query[customerID]: ',req.query['customerID'],'path: ',path)
-    var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[3];    
-    res.setHeader("Content-Type", "text/csv; charset=Windows-874;")
-    res.setHeader('Content-Disposition', contentDisposition(file))
-    var filestream = fs.createReadStream(file);
-    console.log('res: ',res)
-    filestream.pipe(res);  
-    onFinished(res, () => {
-        destroy(filestream) 
-    })
-
-//     let data = req.body
-//     let obj = null
-//     for (let x in data) {
-//         obj = x  
-//     }
-//     let obj_json = JSON.parse(obj) 
-//     let data_ = obj_json.data_.split(':')
-//     let customer =''
-//     obj_json.customerID === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
-//    var file = __dirname + '/reports/'+obj_json.JobDate+'/'+obj_json.CCT_Data+'/'+customer+'/'+data_[2]+'/'+data_[3];
-//     //var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/' + customer + '/'+data_[2]+'/'+data_[3]    
-    
-//     var filename = path.basename(file);
-//     var mimetype = mime.lookup(file);
-//     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
-//     res.setHeader('Content-Disposition', contentDisposition(file))
-//     var filestream = fs.createReadStream(file,'utf-8');
-//     console.log('res: ',res) 
-//     filestream.pipe(res)    
-//     onFinished(res, () => {
-//         destroy(filestream) 
-//     })    
-}) 
-app.post('/checkUser', urlencodedParser, (req, res) => {
-    let data_ = req.body 
-    let obj = null
-    for (let x in data_) {
         obj = x
     }
     let obj_json = JSON.parse(obj)
-    let data_all = {
-        'jobid': obj_json['jobid'],
-        'password': obj_json['password'],
+    //console.log('data: ',data)
+    let data_ = obj_json['data_'].split(':')
+    console.log('obj_json: ', obj_json)
+    let customer = ''
+    customer = checkcustomer( obj_json['customerID'] )
+    // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
+        + '/' + customer
+    console.log('req.query[customerID]: ', req.query['customerID'], 'path: ', path)
+    var file = __dirname + '/reports/' + data_[0] + '/' + data_[1] + '/' + customer + '/' + data_[2] + '/' + data_[3];
+    res.setHeader("Content-Type", "text/csv; charset=Windows-874;")
+    res.setHeader('Content-Disposition', contentDisposition(file))
+    var filestream = fs.createReadStream(file);
+    console.log('res: ', res)
+    filestream.pipe(res);
+    onFinished(res, () => {
+        destroy(filestream)
+    })
+
+    //     let data = req.body
+    //     let obj = null
+    //     for (let x in data) {
+    //         obj = x  
+    //     }
+    //     let obj_json = JSON.parse(obj) 
+    //     let data_ = obj_json.data_.split(':')
+    //     let customer =''
+    //     obj_json.customerID === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    //    var file = __dirname + '/reports/'+obj_json.JobDate+'/'+obj_json.CCT_Data+'/'+customer+'/'+data_[2]+'/'+data_[3];
+    //     //var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/' + customer + '/'+data_[2]+'/'+data_[3]    
+
+    //     var filename = path.basename(file);
+    //     var mimetype = mime.lookup(file);
+    //     res.setHeader("Content-Type", "text/csv; charset=utf-8;")
+    //     res.setHeader('Content-Disposition', contentDisposition(file))
+    //     var filestream = fs.createReadStream(file,'utf-8');
+    //     console.log('res: ',res) 
+    //     filestream.pipe(res)    
+    //     onFinished(res, () => {
+    //         destroy(filestream) 
+    //     })    
+})
+app.post('/checkUser', urlencodedParser, (req, res) => {
+    try {
+        let data_ = req.body
+        let obj = null
+        for (let x in data_) {
+            obj = x
+        }
+        let obj_json = JSON.parse(obj)
+        let data_all = {
+            'jobid': obj_json['jobid'],
+            'password': obj_json['password'],
+        }
+        // console.log(data_all)
+        dboperations.checkUser(data_all).then((result, err) => {
+            // if (err) {
+            //     console.log('error: ',err)  
+            //     res.json({error: err})
+            // }
+            // else {
+            //     res.json(result[0])
+            // }
+            if (err) {
+                console.log('error: ', err)
+                res.json({ error: err })
+            }
+            else {
+                res.json(result[0])
+            }
+        })
+    } catch (error) {
+        console.error(error);
+        res.json({ error: error })
+        // Expected output: ReferenceError: nonExistentFunction is not defined
+        // (Note: the exact output may be browser-dependent)
     }
-    // console.log(data_all)
-    dboperations.checkUser(data_all).then((result, err) => { 
-        // if (err) {
-        //     console.log(err)  
-        //     res.json({error: err})
-        // }
-        // else {
-        //     res.json(result[0])
-        // }
-        if (err) {
-            console.log(err)
-            res.json({error: err})
-        }
-        else {
-            res.json(result[0])
-        }
+
+})
+app.post("/gettemplatefile", urlencodedParser, async (req, res) => { 
+    let data = req.body
+    let obj = null
+    for (let x in data) {
+        obj = x
+    }
+    let obj_json = JSON.parse(obj)
+    let filename = ''
+    console.log('obj_json[type]: ',obj_json['type'])
+    obj_json['type'] === 'Deposit' ? filename = 'BranchtoCCTTemplate_deposit.xls' : filename = 'CCTToBranchTemplate_withdraw.xls'
+
+    var file = __dirname + '/template/'+filename
+    console.log('file: ', file)
+    res.setHeader("Content-Type", "application/vnd.ms-excel; charset=Windows-874;")
+    res.setHeader('Content-Disposition', contentDisposition(file))
+    var filestream = fs.createReadStream(file);
+    console.log('res: ', res)
+    filestream.pipe(res);
+    onFinished(res, () => { 
+        destroy(filestream)
     })
 })
-app.post("/generateXLS", urlencodedParser, async (req, res) => { 
+app.post("/generateXLS", urlencodedParser, async (req, res) => {
 
     let data = req.body
     let obj = null
     for (let x in data) {
-        obj = x  
+        obj = x
     }
     let obj_json = JSON.parse(obj)
     //console.log('data: ',data)
-    let data_ = obj_json['data_'].split(':')    
-    console.log('obj_json: ',obj_json)
-    let customer =''
-    obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    let data_ = obj_json['data_'].split(':')
+    console.log('obj_json: ', obj_json)
+    let customer = ''
+    //obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    customer = checkcustomer( obj_json['customerID'] )
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
-   var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4]
-    console.log('file: ',file)
+    var file = __dirname + '/reports/' + data_[0] + '/' + data_[1] + '/' + customer + '/' + data_[2] + '/' + data_[4]
+    console.log('file: ', file)
     res.setHeader("Content-Type", "application/vnd.ms-excel; charset=Windows-874;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
-    console.log('res: ',res)
-    filestream.pipe(res);  
+    console.log('res: ', res)
+    filestream.pipe(res);
     onFinished(res, () => {
-        destroy(filestream)   
+        destroy(filestream)
     })
-    //----------------------------------------------------------------------------
-    // let data = req.body 
-    // let obj = null 
-    // for (let x in data) { 
-    //     obj = x
-    // }
-    // let obj_json = JSON.parse(obj)
-    // console.log('obj_json: ',obj_json)
-    // let data_ = obj_json['data_'].split(':')   
-    // let customer =''
-    // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
-    // var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4]
-    // console.log('file: ',file)
-    // const ftp = new JSFtp({
-    //     host: "192.168.100.94",
-    //     port: 21,
-    //     user: "svc-ftp-std",
-    //     password: "Hr$797Yl",
-    //     secure: false
-    // })
-    // let repmte_path =data_[0]+'/'+data_[1]+"/"+customer+"/"+data_[2]+'/'+data_[4]
-    // let filename = "./"+data_[4]
-
-    // ftp.get(repmte_path, filename, function(hadError) {
-    //     if (!hadError) console.log("File downloaded successfully!");
-    //   });
-
-    // var filename = path.basename(file);
-    // var mimetype = mime.lookup(file);
-    // res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
-    // res.setHeader('Content-Disposition', encodeURIComponent(file))
-    // var filestream = fs.createReadStream(file);
-    // filestream.pipe(res);
-    // onFinished(res, () => {
-    //     destroy(filestream) 
-    // }) 
-    
-    //----------------------------------------------------------------------------------
-    // let data = req.body 
-    // let obj = null 
-    // for (let x in data) { 
-    //     obj = x
-    // }
-    // let obj_json = JSON.parse(obj)
-    // console.log('obj_json: ',obj_json)
-    // let data_ = obj_json['data_'].split(':')   
-    // let customer =''
-    // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB' 
-    // var file = __dirname + '/reports/'+data_[0]+'/'+data_[1]+'/'+customer+'/'+data_[2]+'/'+data_[4];    
-    // var filename = path.basename(file);
-    // var mimetype = mime.lookup(file);
-    // res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8;")
-    // res.setHeader('Content-Disposition', encodeURIComponent(file))
-    // var filestream = fs.createReadStream(file);
-    // filestream.pipe(res);
-    // onFinished(res, () => {
-    //     destroy(filestream) 
-    // }) 
-    //----------------------------------------------------------------------------------
 })
 app.get('/getcct_data', urlencodedParser, async (req, res) => {
     dboperations.getCCT_Data(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -672,13 +644,13 @@ app.get('/getcct_data', urlencodedParser, async (req, res) => {
 })
 app.get('/getActitySelectd', urlencodedParser, async (req, res) => {
     dboperations.getActitySelectd(req.query['user_id'], req.query['customerID']).then((result, err) => {
-        if (err) { 
-            console.log(err)
-            res.json({error: err})
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             //console.log( 'res.json(result[0]): ',res.json( result[0] ) )
-            res.json( result[0])
+            res.json(result[0])
         }
     })
 })
@@ -686,27 +658,28 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     const client = new ftp.Client()
     client.ftp.verbose = true
     var output_data = []
-    var output_data0 = {} 
-    let customer =''
-    req.query['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    var output_data0 = {}
+    let customer = ''
+    //req.query['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
+    customer = checkcustomer( req.query['customerID'] )
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
-    var dir_ = {} 
+    var dir_ = {}
     var path_ = ""  
     try {
         await client.access({
             host: "192.168.100.94",
             port: 21,
             user: "svc-ftp-std",
-            password: "Hr$797Yl",
+            password: "mnP9eFP8", 
             secure: false
-        })        
-         dir_ = await client.list(path)
-         console.log('path: ', path)
+        })
+        dir_ = await client.list(path)
+        console.log('path: ', path)
         console.log('dir_ : ', dir_)
         console.log('dir_.length : ', dir_.length)
         console.log('dir_.name : ', dir_[0].name)
-        
+
         if (dir_.length > 0) {
             for (var index = 1; index <= dir_.length; index++) {
                 path_ = 'reports/' + path + '/'//--------------------------------------------------------------------------------------------path D:/projects/gfccp_web/public/reports/
@@ -731,7 +704,7 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         remotepath: path_,
                         files: getReportFilename(path_),
                         id_: index - 1
-                    }                                              
+                    }
                 }
                 else//--------------------------------------------------มีโฟลเดอร์ backend                
                 {
@@ -743,17 +716,17 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
                         remotepath: path_,
                         files: getReportFilename(path_),
                         id_: index - 1
-                    }                    
+                    }
                 }
                 output_data.push(output_data0)
-                console.log('output_data in for loop: ', output_data)  
+                console.log('output_data in for loop: ', output_data)
             }
         }
         console.log('output_data: ', output_data)
         //return output_data
     }
     catch (err) {
-        console.log('err: ',err)  
+        console.log('err: ', err)
     }
     client.close()
     res.json(output_data)
@@ -781,67 +754,67 @@ const getReportFilename = (path_) => {
     // console.log('output0: ',output0)
     // output.push( output0 )
     return output
-} 
+}
 //------------getrole 
-app.get('/getrole', urlencodedParser, (req, res) => { 
+app.get('/getrole', urlencodedParser, (req, res) => {
     // let type_ = ''
     // type_ = req.query['type_']
-    console.log( 'req.query[user_id]',req.query['user_id'] )
-        dboperations.getRole( req.query['user_id'] ).then((result, err) => {
-            if (err) {
-                console.log(err) 
-                res.json({error: err})
-            }
-            else {
-                res.json(result[0])
-            } 
-        })
-})
-app.get('/getactivity_authen', urlencodedParser, (req, res) => { 
-    // let type_ = ''
-    // type_ = req.query['type_']
-    console.log( 'req: ',req )
-    console.log( 'approve_setting_id: ',req.query['approve_setting_id'] )
-    console.log( 'approve_setting_version: ',req.query['approve_setting_version'] )
-    dboperations.getactivity_authen( req.query['approve_setting_id'],req.query['approve_setting_version'] ).then((result, err) => {
-            if (err) { 
-                console.log(err) 
-                res.json({error: err})
-            }
-            else {
-                res.json(result)
-            } 
+    console.log('req.query[user_id]', req.query['user_id'])
+    dboperations.getRole(req.query['user_id']).then((result, err) => {
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
+        }
+        else {
+            res.json(result[0])
+        }
     })
 })
-app.get('/getuser', urlencodedParser, (req, res) => { 
+app.get('/getactivity_authen', urlencodedParser, (req, res) => {
     // let type_ = ''
     // type_ = req.query['type_']
-    console.log( 'req.query[user_id]',req.query['user_id'] )
-    console.log( 'req.query[CustomerID]',req.query['CustomerID'] )
-        dboperations.getUser( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
-            if (err) {
-                console.log(err)
-                res.json({error: err})
-            }
-            else {
-                res.json(result[0])
-            } 
-        })
+    console.log('req: ', req)
+    console.log('approve_setting_id: ', req.query['approve_setting_id'])
+    console.log('approve_setting_version: ', req.query['approve_setting_version'])
+    dboperations.getactivity_authen(req.query['approve_setting_id'], req.query['approve_setting_version']).then((result, err) => {
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
+        }
+        else {
+            res.json(result)
+        }
+    })
 })
-app.get('/getuserEdit', urlencodedParser, (req, res) => { 
+app.get('/getuser', urlencodedParser, (req, res) => {
     // let type_ = ''
     // type_ = req.query['type_']
-    console.log( 'req.query[user_id]',req.query['user_id'] )
-    console.log( 'req.query[CustomerID]',req.query['CustomerID'] )
-        dboperations.getuserEdit( req.query['user_id'],req.query['CustomerID'] ).then((result, err) => {
-            if (err) {
-                console.log(err) 
-                res.json({error: err})
-            }
-            else {
-                res.json(result[0])
-            } 
-        })
+    console.log('req.query[user_id]', req.query['user_id'])
+    console.log('req.query[CustomerID]', req.query['CustomerID'])
+    dboperations.getUser(req.query['user_id'], req.query['CustomerID']).then((result, err) => {
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
+app.get('/getuserEdit', urlencodedParser, (req, res) => {
+    // let type_ = ''
+    // type_ = req.query['type_']
+    console.log('req.query[user_id]', req.query['user_id'])
+    console.log('req.query[CustomerID]', req.query['CustomerID'])
+    dboperations.getuserEdit(req.query['user_id'], req.query['CustomerID']).then((result, err) => {
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
+        }
+        else {
+            res.json(result[0])
+        }
+    })
 })
 app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
     // console.log(req.query['CustomerID'])
@@ -850,34 +823,34 @@ app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
     if (type_ === 'BOT') {
         dboperations.getCashCenterBOT(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
             if (err) {
-                console.log(err)
-                res.json({error: err})
+                console.log('error: ', err)
+                res.json({ error: err })
             }
             else {
-                res.json(result[0])  
-            }
-        })
-    } 
-    else {
-        dboperations.getCashCenterData(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
-            if (err) {
-                console.log(err)
-                res.json({error: err})
-            }
-            else {
-                res.json(result[0]) 
+                res.json(result[0])
             }
         })
     }
-}) 
+    else {
+        dboperations.getCashCenterData(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
+            if (err) {
+                console.log('error: ', err)
+                res.json({ error: err })
+            }
+            else {
+                res.json(result[0])
+            }
+        })
+    }
+})
 app.get('/getbotbranch', urlencodedParser, (req, res) => {
     dboperations.getBOT_Branch(req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
-            res.json(result[0]) 
+            res.json(result[0])
         }
     })
 })
@@ -885,8 +858,8 @@ app.get('/getbranchdata', urlencodedParser, (req, res) => {
     // console.log(req.query['CustomerID'])
     dboperations.getBranchData(req.query['CustomerID'], req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -896,8 +869,8 @@ app.get('/getbranchdata', urlencodedParser, (req, res) => {
 app.get('/getbranchforcash', urlencodedParser, (req, res) => {
     dboperations.getBranchForCash(req.query['CustomerID'], req.query['CCT'], req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -905,21 +878,24 @@ app.get('/getbranchforcash', urlencodedParser, (req, res) => {
     })
 
 })
-app.get('/orderlist', urlencodedParser, (req, res) => {
+app.get('/orderlist', urlencodedParser, (req, res) => { 
+    console.log('/orderlist user_id: ', req.query['user_id'])
+    console.log('/orderlist CustomerID: ', req.query['CustomerID'])
+    //dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID'], req.query['approve_setting_id'], req.query['approve_setting_version'] ).then((result, err) => {
     dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
         }
-    })
+    }) 
 })
 // app.get('/getcctbranch', urlencodedParser, (req, res) => {  
 //     dboperations.getCashCenterData( req.query['CustomerID']  ).then((result, err) => {
 //         if (err) {
-//             console.log(err)
+//             console.log('error: ',err)
 //         }
 //         else {
 //             res.json(result[0]) 
@@ -927,61 +903,73 @@ app.get('/orderlist', urlencodedParser, (req, res) => {
 //     })
 // })
 app.get('/approvelist', urlencodedParser, (req, res) => {
-    console.log('req.query[RoleId]: ',req.query['RoleId']
-    ,'req.query[CustomerID]: ',req.query['CustomerID']
-    ,'req.query[user_id]: ',req.query['user_id']
-    ,'req.query[approve_setting_id]: ',req.query['approve_setting_id'])
-    dboperations.getApproveList(req.query['RoleId']
-    , req.query['CustomerID'] 
-    , req.query['user_id']
-    , req.query['approve_setting_id']).then((result, err) => {
+    try {
+        console.log('req.query[RoleId]: ', req.query['RoleId']
+            , 'req.query[CustomerID]: ', req.query['CustomerID']
+            , 'req.query[user_id]: ', req.query['user_id']
+            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
+            , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
+            )
+        dboperations.getApproveList(req.query['RoleId']
+            , req.query['CustomerID']
+            , req.query['user_id']
+            , req.query['approve_setting_id']
+            , req.query['approve_setting_version']
+            ).then((result, err) => {
+                if (err) {
+                    console.log('error: ', err)
+                    res.json({ error: err })
+                }
+                else {
+                    res.json(result[0])
+                }
+            })
+    } catch (error) {
+        res.json({ error: error })
+        console.error(error)
+        // Expected output: ReferenceError: nonExistentFunction is not defined
+        // (Note: the exact output may be browser-dependent)
+    }
+
+})
+app.get('/approveProcList', urlencodedParser, (req, res) => {
+    dboperations.getApproveProcList(req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)  
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
         }
     })
 })
-app.get('/approveProcList', urlencodedParser, (req, res) => { 
-    dboperations.getApproveProcList( req.query['user_id'] ).then((result, err) => {
+app.get('/get_approveProcData', urlencodedParser, (req, res) => {
+    dboperations.get_approveProcData(req.query['Id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
         }
     })
 })
-app.get('/get_approveProcData', urlencodedParser, (req, res) => { 
-    dboperations.get_approveProcData( req.query['Id']).then((result, err) => {
+app.get('/get_approveProcDataDet', urlencodedParser, (req, res) => {
+    dboperations.get_approveProcDataDet(req.query['approve_setting_id'], req.query['version']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
         }
     })
 })
-app.get('/get_approveProcDataDet', urlencodedParser, (req, res) => { 
-    dboperations.get_approveProcDataDet( req.query['approve_setting_id'],req.query['version']  ).then((result, err) => {
-        if (err) {
-            console.log(err)
-            res.json({error: err})
-        }
-        else {
-            res.json(result[0])
-        }
-    })
-})  
 app.get('/get_pbi_url', urlencodedParser, (req, res) => {
     dboperations.get_pbi_url(req.query['pagname'], req.query['CustomerID']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -992,8 +980,8 @@ app.get('/getbanktypedata', urlencodedParser, (req, res) => {
     console.log('req.query[user_id]: ', req.query['user_id'])
     dboperations.getBankTypeData(req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -1004,8 +992,8 @@ app.get('/getdownloadlink', urlencodedParser, (req, res) => {
     console.log('req.query[user_id]: ', req.query['user_id'])
     dboperations.getDownloadLink(req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -1019,12 +1007,12 @@ app.post('/add_approveProc', urlencodedParser, (req, res) => {
         obj = x
     }
     let obj_json = JSON.parse(obj)
-    console.log( 'obj_json: ',obj_json )
-    console.log( 'data_: ',data_ )    
+    console.log('obj_json: ', obj_json)
+    console.log('data_: ', data_)
     dboperations.add_approveProc(obj_json).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -1040,8 +1028,8 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
     let obj_json = JSON.parse(obj)
     let data_all = {
         'customerID': obj_json['CustomerID'],
-        'approve_setting_id' : obj_json['approve_setting_id'], 
-        'approve_setting_version' : obj_json['approve_setting_version'], 
+        'approve_setting_id': obj_json['approve_setting_id'],
+        'approve_setting_version': obj_json['approve_setting_version'],
         'roleid': obj_json['roleid'],
         'order_category': obj_json['OrderCategoryNew'],
         'servicetype': obj_json['OrderTypeNew'],
@@ -1351,8 +1339,8 @@ app.post('/manual_add_order', urlencodedParser, (req, res) => {
     // console.log(data_all)
     dboperations.add_manual_order(data_all).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -1678,8 +1666,8 @@ app.post('/edit_order', urlencodedParser, (req, res) => {
     // console.log(data_all)
     dboperations.update_order(data_all).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
@@ -1694,18 +1682,18 @@ app.post('/edit_approveproc', urlencodedParser, (req, res) => {
     }
     let obj_json = JSON.parse(obj)
     let AllRowsDet = parseInt(obj_json['AllRowsDet'])
-    console.log('obj_json: ',obj_json)
+    console.log('obj_json: ', obj_json)
     console.log('data_all AllRowsDet: ', AllRowsDet)
     // console.log(data_all)
 
     dboperations.update_approveproc(obj_json).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
-            res.json(result[0]) 
-        } 
+            res.json(result[0])
+        }
     })
 })
 app.get('/getcashorder', urlencodedParser, (req, res) => {
@@ -1714,21 +1702,48 @@ app.get('/getcashorder', urlencodedParser, (req, res) => {
     // console.log(req.query['Id'])
     dboperations.getCashOrder(req.query['Id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
             res.json(result[0])
         }
     })
 })
+app.get('/update_cashstatus_order_all', urlencodedParser, (req, res) => {
+     console.log('update_cashstatus_order_all req.query[Id]:',req.query['Id'])
+     console.log('update_cashstatus_order_all req.query[Id].length:',req.query['Id'].length)
+     console.log('update_cashstatus_order_all req.query[Type_]:',req.query['Type_'])    
+     let output = null
+     req.query['Id'].forEach( (item) => {
+       // console.log(item)
+        console.log('update_cashstatus_order_all in array Id: ',parseInt( item ) )     
+        dboperations.update_cashstatus_order(parseInt( item ), req.query['Type_'], req.query['user_id']).then((result, err) => {
+            if (err) {
+                console.log('error: ', err)
+            }
+            else {
+               // res.json(result[0])
+               output = result[0]
+            }
+        })
+      } )
+      res.json( output )
+    // dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_'], req.query['user_id']).then((result, err) => {
+    //     if (err) {
+    //         console.log('error: ', err)
+    //     }
+    //     else {
+    //         res.json(result[0])
+    //     }
+    // })
+})
 app.get('/update_cashstatus_order', urlencodedParser, (req, res) => {
     // console.log(req.query['Id'])
     // console.log(req.query['Type_'])
     dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_'], req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err)
-            res.json({error: err})
+            console.log('error: ', err)
         }
         else {
             res.json(result[0])
@@ -1743,15 +1758,15 @@ app.get('/delete_app_proc_det', urlencodedParser, (req, res) => {
     // }
     // let obj_json = JSON.parse(obj)    
     // console.log('obj_json: ',obj_json)
-    dboperations.delete_app_proc_det(req.query['Id'],req.query['user_id']).then((result, err) => {
+    dboperations.delete_app_proc_det(req.query['Id'], req.query['user_id']).then((result, err) => {
         if (err) {
-            console.log(err) 
-            res.json({error: err})
+            console.log('error: ', err)
+            res.json({ error: err })
         }
         else {
-            res.json(result[0]) 
+            res.json(result[0])
         }
     })
-}) 
+})
 app.listen(3344, () => console.log("running on localhost:3344"))
 
