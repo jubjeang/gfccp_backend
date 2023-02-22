@@ -238,45 +238,27 @@ async function getBranchForCash(CustomerID, CCT, user_id) {
         return ( [ { error: error } ] );
     }
 }
-// async function getOrdertrackinglist() {
-//     try {
-//         let pool = await sql.connect(config);
-//         let products = await pool.request().query("select c.AutoID,c.TaskId,c.CustomerID,c.CIT_Type,c.[date],c.route_name,c.CL_name,c.CD_name,c.cct_code,c.cct_branch,b.branch_name  from [dbo].[CIT_status_orderCCP] c inner join T_CCT_Monthly_Branch b on c.TaskId=b.TaskId where c.[date]='2022-08-22' and c.CustomerID='2c164463-ef08-4cb6-a200-08e70aece9ae' and c.cct_code='01' and c.route_name='Bangkok-CIT-09'  order by AutoID;");
-//         // let products = await pool.request().query("select * from gfccp_order where branch_name<>'ยอดรวม' order by AutoID;");
-//         return products.recordsets;
-//     }
-//     catch (error) {
-//         console.log('error: ', error)
-//         return ( [ { error: error } ] );
-//     }
-// }
-// async function getCCT_Branch(CustomerID) {
-//     try {
-//         let pool = await sql.connect(config);
-//         let sql="select * from T_Branch where customerID ='1493f524-c52e-4c06-aee8-8ef962929242' "
-//         sql +=" and branch_status=0"
-//         // console.log('user_id: ',user_id)
-//         // console.log('CustomerID: ',CustomerID)        
-//         let T_Branch = await pool.request()
-//         // .input('user_id', sql.NVarChar, user_id)
-//         // .input('customerID', sql.NVarChar, CustomerID)
-//         .query( sql );        
-//         return T_Branch.recordsets;
-//     }
-//     catch (error) {
-//         console.log('error: ',error)
-//return ( [ { error: error } ] );
-//     }
-// }
-async function getOrdersList(user_id, CustomerID) {
+async function getOrdersList(RoleId
+    , CustomerID
+    , user_id
+    , approve_setting_id 
+    , approve_setting_version) {
     try {
         let pool = await sql.connect(config);
-        console.log('user_id: ', user_id)
-        console.log('CustomerID: ', CustomerID)
+        console.log(
+            'getOrdersList RoleId: ', RoleId
+            , 'CustomerID: ', CustomerID
+            , 'user_id: ', user_id
+            , 'approve_setting_id: ', approve_setting_id
+            , 'approve_setting_version: ', approve_setting_version
+            )
         // let products = await pool.request().query("select o.*,(SELECT top 1 b.gfc_cct from [dbo].[T_Branch] b where gfc_cct is not null and b.branch_id = o.branch_code ) as cash_center from gfccp_order o where LTRIM(RTRIM(row_type))<>'summary' and ( convert(varchar, order_date, 105)  = convert(varchar, GETDATE(), 105) or convert(varchar, order_date, 105)  = convert(varchar, DATEADD(day,1,GETDATE()), 105) ) and o.[status]='Y' order by AutoID desc");
         let spOrderlist = await pool.request()
-            .input('user_id', sql.NVarChar, user_id)
             .input('customerID_', sql.NVarChar, CustomerID)
+            .input('RoleId_', sql.Int, RoleId)
+            .input('user_id', sql.Int, user_id)
+            .input('approve_setting_id', sql.Int, approve_setting_id)
+            .input('approve_setting_version', sql.Float, approve_setting_version)
             .execute("spOrderlist");
         return spOrderlist.recordsets;
     }
@@ -284,6 +266,35 @@ async function getOrdersList(user_id, CustomerID) {
         console.log('error: ', error)
         return ( [ { error: error } ] );
     } 
+}
+async function getApproveNList(RoleId
+    , CustomerID
+    , user_id
+    , approve_setting_id 
+    , approve_setting_version
+    ) {
+    console.log(
+    'getApproveList RoleId: ', RoleId
+    , 'CustomerID: ', CustomerID
+    , 'user_id: ', user_id
+    , 'approve_setting_id: ', approve_setting_id
+    , 'approve_setting_version: ', approve_setting_version
+    )
+    try {
+        let pool = await sql.connect(config);
+        let spApproveNlist = await pool.request()
+            .input('customerID_', sql.NVarChar, CustomerID)
+            .input('RoleId_', sql.Int, RoleId)
+            .input('user_id', sql.Int, user_id)
+            .input('approve_setting_id', sql.Int, approve_setting_id)
+            .input('approve_setting_version', sql.Float, approve_setting_version)            
+            .execute("spApproveNlist");
+        return spApproveNlist.recordsets;
+    }
+    catch (error) {
+        console.log('error: ', error)
+        return ( [ { error: error } ] );
+    }
 }
 async function getApproveList(RoleId
     , CustomerID
@@ -1474,7 +1485,8 @@ async function update_cashstatus_order(Id, Type_, user_id) {
         console.log(err);
     }
 }
-module.exports = {
+module.exports = { 
+    getApproveNList: getApproveNList,
     getactivity_authen: getactivity_authen,
     getActitySelectd: getActitySelectd, 
     getOrdersList: getOrdersList,

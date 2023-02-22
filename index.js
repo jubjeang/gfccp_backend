@@ -879,10 +879,18 @@ app.get('/getbranchforcash', urlencodedParser, (req, res) => {
 
 })
 app.get('/orderlist', urlencodedParser, (req, res) => { 
-    console.log('/orderlist user_id: ', req.query['user_id'])
-    console.log('/orderlist CustomerID: ', req.query['CustomerID'])
+    console.log('/orderlist req.query[RoleId]: ', req.query['RoleId']
+    , 'req.query[CustomerID]: ', req.query['CustomerID']
+    , 'req.query[user_id]: ', req.query['user_id']
+    , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
+    , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
+    )
     //dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID'], req.query['approve_setting_id'], req.query['approve_setting_version'] ).then((result, err) => {
-    dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID']).then((result, err) => {
+    dboperations.getOrdersList(req.query['RoleId']
+    , req.query['CustomerID']
+    , req.query['user_id']
+    , req.query['approve_setting_id']
+    , req.query['approve_setting_version']).then((result, err) => {
         if (err) {
             console.log('error: ', err)
             res.json({ error: err })
@@ -929,6 +937,34 @@ app.get('/approvelist', urlencodedParser, (req, res) => {
         console.error(error)
         // Expected output: ReferenceError: nonExistentFunction is not defined
         // (Note: the exact output may be browser-dependent)
+    }
+
+})
+app.get('/approvenlist', urlencodedParser, (req, res) => {
+    try {
+        console.log('req.query[RoleId]: ', req.query['RoleId']
+            , 'req.query[CustomerID]: ', req.query['CustomerID']
+            , 'req.query[user_id]: ', req.query['user_id']
+            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
+            , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
+            )
+        dboperations.getApproveNList(req.query['RoleId']
+            , req.query['CustomerID']
+            , req.query['user_id']
+            , req.query['approve_setting_id']
+            , req.query['approve_setting_version']
+            ).then((result, err) => {
+                if (err) {
+                    console.log('error: ', err)
+                    res.json({ error: err })
+                }
+                else {
+                    res.json(result[0])
+                }
+            })
+    } catch (error) {
+        res.json({ error: error })
+        console.error(error)
     }
 
 })
