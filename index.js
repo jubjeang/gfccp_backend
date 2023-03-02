@@ -13,7 +13,26 @@ var destroy = require('destroy')
 var onFinished = require('on-finished')
 const iconv = require('iconv-lite')
 var fileName
+var config = require('./server/dbconfig');
+const sql = require('mssql');
 
+const setordernumber = (value) => {
+    const now = new Date()
+    const day = ('0' + now.getDate()).slice(-2)
+    const month = ('0' + (now.getMonth() + 1)).slice(-2)
+    const year = now.getFullYear()
+    const hours = ('0' + now.getHours()).slice(-2)
+    const minutes = ('0' + now.getMinutes()).slice(-2)
+    // const seconds = ('0' + now.getSeconds()).slice(-2)
+    const milliseconds_0 = ('0' + now.getMilliseconds()).slice(-2)
+    const milliseconds = ('00' + value ).slice(-2)
+    console.log('milliseconds: ',milliseconds)
+    console.log('value: ',value)
+    // const milliseconds = ('00' + now.getMilliseconds()).slice(-3)
+    return `${day}${month}${year}${hours}${milliseconds_0}${milliseconds}`
+    //return `${day}${month}${year}${hours}${minutes}${seconds}${milliseconds}`
+
+}
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         // console.log( req.file.filename ) 
@@ -48,15 +67,201 @@ const checkvalue = (value_, type_) => {
     }
     return returnValue
 }
-const checkcustomer = (value_) => { 
-    if( value_ === '2c164463-ef08-4cb6-a200-08e70aece9ae')
-    {
+const upload_add_order = (gfccp_order, type_) => {
+    const pool = new sql.ConnectionPool(config);
+    console.log('gfccp_order.ordernumber: ',gfccp_order.ordernumber)
+    let recordsets_
+    if (type_ === 'Deposit') {
+        // Connect to the database and execute the stored procedure
+        pool.connect().then(() => { 
+            const request = new sql.Request(pool);
+            // Add the input parameters to the request object
+            request.input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
+            request.input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
+            request.input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
+            request.input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
+            request.input('note_uncount_1000', sql.Float, gfccp_order.note_uncount_1000)
+            request.input('note_uncount_500', sql.Float, gfccp_order.note_uncount_500)
+            request.input('note_uncount_100', sql.Float, gfccp_order.note_uncount_100)
+            request.input('note_uncount_50', sql.Float, gfccp_order.note_uncount_50)
+            request.input('note_uncount_20', sql.Float, gfccp_order.note_uncount_20)
+            request.input('note_uncount_10', sql.Float, gfccp_order.note_uncount_10)
+            request.input('unit_note_uncount_1000', sql.NVarChar, gfccp_order.unit_note_uncount_1000)
+            request.input('unit_note_uncount_500', sql.NVarChar, gfccp_order.unit_note_uncount_500)
+            request.input('unit_note_uncount_100', sql.NVarChar, gfccp_order.unit_note_uncount_100)
+            request.input('unit_note_uncount_50', sql.NVarChar, gfccp_order.unit_note_uncount_50)
+            request.input('unit_note_uncount_20', sql.NVarChar, gfccp_order.unit_note_uncount_20)
+            request.input('unit_note_uncount_10', sql.NVarChar, gfccp_order.unit_note_uncount_10)
+            request.input('pcs_note_uncount_1000', sql.Float, gfccp_order.pcs_note_uncount_1000)
+            request.input('pcs_note_uncount_500', sql.Float, gfccp_order.pcs_note_uncount_500)
+            request.input('pcs_note_uncount_100', sql.Float, gfccp_order.pcs_note_uncount_100)
+            request.input('pcs_note_uncount_50', sql.Float, gfccp_order.pcs_note_uncount_50)
+            request.input('pcs_note_uncount_20', sql.Float, gfccp_order.pcs_note_uncount_20)
+            request.input('pcs_note_uncount_10', sql.Float, gfccp_order.pcs_note_uncount_10)
+            request.input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
+            request.input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
+            request.input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
+            request.input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
+            request.input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
+            request.input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
+            request.input('unit_coin_fit_10', sql.NVarChar, gfccp_order.unit_coin_fit_10)
+            request.input('unit_coin_fit_5', sql.NVarChar, gfccp_order.unit_coin_fit_5)
+            request.input('unit_coin_fit_2', sql.NVarChar, gfccp_order.unit_coin_fit_2)
+            request.input('unit_coin_fit_1', sql.NVarChar, gfccp_order.unit_coin_fit_1)
+            request.input('unit_coin_fit_05', sql.NVarChar, gfccp_order.unit_coin_fit_05)
+
+            request.input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)
+
+            request.input('pcs_coin_fit_10', sql.Float, gfccp_order.pcs_coin_fit_10)
+            request.input('pcs_coin_fit_5', sql.Float, gfccp_order.pcs_coin_fit_5)
+            request.input('pcs_coin_fit_2', sql.Float, gfccp_order.pcs_coin_fit_2)
+            request.input('pcs_coin_fit_1', sql.Float, gfccp_order.pcs_coin_fit_1)
+            request.input('pcs_coin_fit_05', sql.Float, gfccp_order.pcs_coin_fit_05)
+            request.input('pcs_coin_fit_025', sql.Float, gfccp_order.pcs_coin_fit_025)
+
+            request.input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
+            request.input('remark', sql.NVarChar, gfccp_order.remark)
+            request.input('order_date', sql.DateTime, gfccp_order.order_date)
+            request.input('order_category', sql.NVarChar, gfccp_order.order_category)
+            request.input('servicetype', sql.NVarChar, gfccp_order.servicetype)
+            request.input('customer_no', sql.NVarChar, gfccp_order.customer_no)
+            request.input('customerID', sql.NVarChar, gfccp_order.customerID)
+            request.input('row_type', sql.NVarChar, gfccp_order.row_type)
+            request.input('attach_file', sql.NVarChar, gfccp_order.attach_file)
+            request.input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+            request.input('roleid', sql.Int, gfccp_order.roleid)
+            request.input('approve_setting_id', sql.Int, gfccp_order.approve_setting_id)
+            request.input('approve_setting_version', sql.Int, gfccp_order.approve_setting_version)
+            request.input('createby', sql.NVarChar, gfccp_order.createby)
+            request.input('ordernumber', sql.VarChar, gfccp_order.ordernumber)
+            request.input('ordernumber_running', sql.Int, gfccp_order.ordernumber_running)
+           // Execute the stored procedure
+            // setTimeout(() => {
+            request.execute('spUpload_add_order_deposit').then(result => {
+                // console.log('Stored procedure executed successfully.');
+                // console.log(result);
+                recordsets_ = request.recordsets;
+                pool.close();
+            }).catch(err => {
+                console.error(err);
+                pool.close();
+            });
+            // }, 10000);
+
+        }).catch(err => {
+            console.error(err);
+        });
+    }
+    else if (type_ === 'Withdraw') { 
+        pool.connect().then(() => {
+            const request = new sql.Request(pool);
+            // Add the input parameters to the request object
+                request.input('branchorigin_code', sql.NVarChar, gfccp_order.branchorigin_code)
+                request.input('branchorigin_name', sql.NVarChar, gfccp_order.branchorigin_name)
+                request.input('branchdest_code', sql.NVarChar, gfccp_order.branchdest_code)
+                request.input('branchdest_name', sql.NVarChar, gfccp_order.branchdest_name)
+
+                request.input('note_new_1000', sql.Float, gfccp_order.note_new_1000)
+                request.input('note_fit_1000', sql.Float, gfccp_order.note_fit_1000)
+                request.input('note_new_500', sql.Float, gfccp_order.note_new_500)
+                request.input('note_fit_500', sql.Float, gfccp_order.note_fit_500)
+                request.input('note_new_100', sql.Float, gfccp_order.note_new_100)
+                request.input('note_fit_100', sql.Float, gfccp_order.note_fit_100)
+                request.input('note_new_50', sql.Float, gfccp_order.note_new_50)
+                request.input('note_fit_50', sql.Float, gfccp_order.note_fit_50)
+                request.input('note_new_20', sql.Float, gfccp_order.note_new_20)
+                request.input('note_fit_20', sql.Float, gfccp_order.note_fit_20)
+                request.input('note_new_10', sql.Float, gfccp_order.note_new_10)
+                request.input('note_fit_10', sql.Float, gfccp_order.note_fit_10)
+
+                request.input('pcs_note_new_1000', sql.Float, gfccp_order.pcs_note_new_1000)
+                request.input('pcs_note_fit_1000', sql.Float, gfccp_order.pcs_note_fit_1000)
+                request.input('pcs_note_new_500', sql.Float, gfccp_order.pcs_note_new_500)
+                request.input('pcs_note_fit_500', sql.Float, gfccp_order.pcs_note_fit_500)
+                request.input('pcs_note_new_100', sql.Float, gfccp_order.pcs_note_new_100)
+                request.input('pcs_note_fit_100', sql.Float, gfccp_order.pcs_note_fit_100)
+                request.input('pcs_note_new_50', sql.Float, gfccp_order.pcs_note_new_50)
+                request.input('pcs_note_fit_50', sql.Float, gfccp_order.pcs_note_fit_50)
+                request.input('pcs_note_new_20', sql.Float, gfccp_order.pcs_note_new_20)
+                request.input('pcs_note_fit_20', sql.Float, gfccp_order.pcs_note_fit_20)
+                request.input('pcs_note_new_10', sql.Float, gfccp_order.pcs_note_new_10)
+                request.input('pcs_note_fit_10', sql.Float, gfccp_order.pcs_note_fit_10)
+
+                request.input('unit_note_new_1000', sql.NVarChar, gfccp_order.unit_note_new_1000)
+                request.input('unit_note_fit_1000', sql.NVarChar, gfccp_order.unit_note_fit_1000)
+                request.input('unit_note_new_500', sql.NVarChar, gfccp_order.unit_note_new_500)
+                request.input('unit_note_fit_500', sql.NVarChar, gfccp_order.unit_note_fit_500)
+                request.input('unit_note_new_100', sql.NVarChar, gfccp_order.unit_note_new_100)
+                request.input('unit_note_fit_100', sql.NVarChar, gfccp_order.unit_note_fit_100)
+                request.input('unit_note_new_50', sql.NVarChar, gfccp_order.unit_note_new_50)
+                request.input('unit_note_fit_50', sql.NVarChar, gfccp_order.unit_note_fit_50)
+                request.input('unit_note_new_20', sql.NVarChar, gfccp_order.unit_note_new_20)
+                request.input('unit_note_fit_20', sql.NVarChar, gfccp_order.unit_note_fit_20)
+                request.input('unit_note_new_10', sql.NVarChar, gfccp_order.unit_note_new_10)
+                request.input('unit_note_fit_10', sql.NVarChar, gfccp_order.unit_note_fit_10)
+
+                request.input('coin_fit_10', sql.Float, gfccp_order.coin_fit_10)
+                request.input('coin_fit_5', sql.Float, gfccp_order.coin_fit_5)
+                request.input('coin_fit_2', sql.Float, gfccp_order.coin_fit_2)
+                request.input('coin_fit_1', sql.Float, gfccp_order.coin_fit_1)
+                request.input('coin_fit_05', sql.Float, gfccp_order.coin_fit_05)
+                request.input('coin_fit_025', sql.Float, gfccp_order.coin_fit_025)
+
+                request.input('unit_coin_fit_10', sql.NVarChar, gfccp_order.unit_coin_fit_10)
+                request.input('unit_coin_fit_5', sql.NVarChar, gfccp_order.unit_coin_fit_5)
+                request.input('unit_coin_fit_2', sql.NVarChar, gfccp_order.unit_coin_fit_2)
+                request.input('unit_coin_fit_1', sql.NVarChar, gfccp_order.unit_coin_fit_1)
+                request.input('unit_coin_fit_05', sql.NVarChar, gfccp_order.unit_coin_fit_05)
+                request.input('unit_coin_fit_025', sql.NVarChar, gfccp_order.unit_coin_fit_025)
+
+                request.input('pcs_coin_fit_10', sql.Float, gfccp_order.pcs_coin_fit_10)
+                request.input('pcs_coin_fit_5', sql.Float, gfccp_order.pcs_coin_fit_5)
+                request.input('pcs_coin_fit_2', sql.Float, gfccp_order.pcs_coin_fit_2)
+                request.input('pcs_coin_fit_1', sql.Float, gfccp_order.pcs_coin_fit_1)
+                request.input('pcs_coin_fit_05', sql.Float, gfccp_order.pcs_coin_fit_05)
+                request.input('pcs_coin_fit_025', sql.Float, gfccp_order.pcs_coin_fit_025)
+
+                request.input('total_by_branch', sql.Float, gfccp_order.total_by_branch)
+                request.input('remark', sql.NVarChar, gfccp_order.remark)
+                request.input('order_date', sql.DateTime, gfccp_order.order_date)
+                request.input('order_category', sql.NVarChar, gfccp_order.order_category)
+                request.input('servicetype', sql.NVarChar, gfccp_order.servicetype)
+                request.input('customer_no', sql.NVarChar, gfccp_order.customer_no)
+                request.input('customerID', sql.NVarChar, gfccp_order.customerID)
+                request.input('row_type', sql.NVarChar, gfccp_order.row_type)
+                request.input('attach_file', sql.NVarChar, gfccp_order.attach_file)
+                request.input('attach_file_origin', sql.NVarChar, gfccp_order.attach_file_origin)
+                request.input('roleid', sql.Int, gfccp_order.roleid)
+                request.input('approve_setting_id', sql.Int, gfccp_order.approve_setting_id)
+                request.input('approve_setting_version', sql.Int, gfccp_order.approve_setting_version)
+                request.input('createby', sql.NVarChar, gfccp_order.createby)
+                request.input('ordernumber', sql.VarChar, gfccp_order.ordernumber)
+                request.input('ordernumber_running', sql.Int, gfccp_order.ordernumber_running)
+            // Execute the stored procedure
+            // setTimeout(() => {
+            request.execute('spUpload_add_order_withdraw').then(result => {
+                // console.log('Stored procedure executed successfully.');
+                // console.log(result);
+                recordsets_ = request.recordsets;
+                pool.close();
+            }).catch(err => {
+                console.error(err);
+                pool.close();
+            });
+            // }, 10000);
+
+        }).catch(err => {
+            console.error(err);
+        });
+    }
+    return recordsets_ 
+}
+const checkcustomer = (value_) => {
+    if (value_ === '2c164463-ef08-4cb6-a200-08e70aece9ae') {
         return 'GSB'
-    } else if( value_ === '38bfc1b0-e86e-48b8-9a28-afbeb01770ef')
-    {
-        return 'UOB'   
-    } else if( value_ === 'ea0087c9-4172-4c03-92c5-4cc0cd9ac62d')
-    {
+    } else if (value_ === '38bfc1b0-e86e-48b8-9a28-afbeb01770ef') {
+        return 'UOB'
+    } else if (value_ === 'ea0087c9-4172-4c03-92c5-4cc0cd9ac62d') {
         return 'CIMB'
     }
 }
@@ -127,358 +332,404 @@ app.post('/upload', upload.single('file'), (req, res) => {
     let roleid = req.body.roleid
     let data_ = {}
     let NULL_ = null
-    xlsxFile('./uploads/' + fileName).then((rows) => {
+    // let rows_ = 0
+    xlsxFile('./uploads/' + fileName).then((rows) => { 
+        // console.log('----------------rows.length: ',rows.length)
+        // rows_ = rows.length
+        // for (i in rows) {
         for (i in rows) {
-            if (i >= 2) {
-                if (rows[i][2] === '**คอลั่มน์ที่ซ่อนไว้ไม่สามารถลบออกได้') { break }
-                if (rows[i][3] !== 'ยอดรวม') {
-                    if ((rows[i][3] !== null) && (rows[i][3] !== 'จำนวนมัด')) {
-                        if (servicetype_ === 'Deposit') {
-                            //console.log('servicetype_ === Deposit', rows[i][4] !== '' && rows[i][4] !== null ? check_pcs( rows[i][4],'1000' ) : null )
-                            data_ = {
-                                'branchorigin_code': rows[i][2],
-                                'branchorigin_name': rows[i][3],
-                                'branchdest_code': gfc_cct_code,
-                                'branchdest_name': gfc_cct,
-                                'note_uncount_1000': rows[i][4],
-                                'note_uncount_500': rows[i][5],
-                                'note_uncount_100': rows[i][6],
-                                'note_uncount_50': rows[i][7],
-                                'note_uncount_20': rows[i][8],
-                                'note_uncount_10': rows[i][9],
-
-                                'unit_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
-
-                                'pcs_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,
-                                'pcs_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '500') : 0,//rows[i][5],
-                                'pcs_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '100') : 0,//rows[i][6],
-                                'pcs_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '50') : 0,//rows[i][7],
-                                'pcs_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '20') : 0,//rows[i][8],
-                                'pcs_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '10') : 0,//rows[i][9],
-
-                                'coin_fit_10': rows[i][10],
-                                'coin_fit_5': checkvalue(rows[i][11], 'float'),
-                                'coin_fit_2': rows[i][12],
-                                'coin_fit_1': rows[i][13],
-                                'coin_fit_05': rows[i][14],
-                                'coin_fit_025': rows[i][15],
-
-                                'unit_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
-
-                                'pcs_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '10') : 0, //rows[i][10],
-                                'pcs_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '5') : 0,//checkvalue(rows[i][11], 'float'),
-                                'pcs_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '2') : 0,//rows[i][12],
-                                'pcs_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '1') : 0,//rows[i][13],
-                                'pcs_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '0.50') : 0,//rows[i][14],
-                                'pcs_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '0.25') : 0,//rows[i][15],
-                                'total_by_branch': rows[i][16],
-                                'remark': checkvalue(rows[i][17], 'string') !== undefined ? checkvalue(rows[i][17], 'string') : NULL_,// gfccp_order["refno"] !== undefined ? gfccp_order["refno"] : NULL_
-                                'order_date': date_,
-                                'order_category': OrderCategory_,
-                                'servicetype': servicetype_,
-                                'customer_no': customer_no_,
-                                'customerID': CustomerID,
-                                'row_type': 'normal',
-                                'attach_file': fileName,
-                                'attach_file_origin': attach_file_origin,
-                                'roleid': roleid,
-                                'approve_setting_id': req.body.approve_setting_id,
-                                'createby': user_id,
+            // setTimeout(() => { 
+                if (i >= 2) {
+                    // if (rows[i][2] === '**คอลั่มน์ที่ซ่อนไว้ไม่สามารถลบออกได้') { break }
+                    if (rows[i][3] !== 'ยอดรวม') {
+                        if ((rows[i][3] !== null) && (rows[i][3] !== 'จำนวนมัด')) {
+                            if (servicetype_ === 'Deposit') {
+                                //console.log('servicetype_ === Deposit', rows[i][4] !== '' && rows[i][4] !== null ? check_pcs( rows[i][4],'1000' ) : null )
+                                // dboperations.upload_add_order(data_, 'Deposit').then((result, err) => {
+                                //     if (err) {
+                                //         console.log('error: ', err)
+                                //         res.json({ error: err })
+                                //     }
+                                //     else {
+                                //         // console.log(result)
+                                //     }
+                                // })
+                                data_ = null
+                                // let setordernumber_ = ''
+                                let setordernumber_ = setordernumber(i)
+                                // console.log('setordernumber_: ',setordernumber_)
+                                // setTimeout(() => { 
+                                    data_ = {
+                                        'branchorigin_code': rows[i][2],
+                                        'branchorigin_name': rows[i][3],
+                                        'branchdest_code': gfc_cct_code,
+                                        'branchdest_name': gfc_cct,
+                                        'note_uncount_1000': rows[i][4],
+                                        'note_uncount_500': rows[i][5],
+                                        'note_uncount_100': rows[i][6], 
+                                        'note_uncount_50': rows[i][7],
+                                        'note_uncount_20': rows[i][8],
+                                        'note_uncount_10': rows[i][9],
+        
+                                        'unit_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
+        
+                                        'pcs_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,
+                                        'pcs_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '500') : 0,//rows[i][5],
+                                        'pcs_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '100') : 0,//rows[i][6],
+                                        'pcs_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '50') : 0,//rows[i][7],
+                                        'pcs_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '20') : 0,//rows[i][8],
+                                        'pcs_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '10') : 0,//rows[i][9],
+        
+                                        'coin_fit_10': rows[i][10],
+                                        'coin_fit_5': checkvalue(rows[i][11], 'float'),
+                                        'coin_fit_2': rows[i][12],
+                                        'coin_fit_1': rows[i][13],
+                                        'coin_fit_05': rows[i][14],
+                                        'coin_fit_025': rows[i][15],
+        
+                                        'unit_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
+        
+                                        'pcs_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '10') : 0, //rows[i][10],
+                                        'pcs_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '5') : 0,//checkvalue(rows[i][11], 'float'),
+                                        'pcs_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '2') : 0,//rows[i][12],
+                                        'pcs_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '1') : 0,//rows[i][13],
+                                        'pcs_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '0.50') : 0,//rows[i][14],
+                                        'pcs_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '0.25') : 0,//rows[i][15],
+                                        'total_by_branch': rows[i][16],
+                                        'remark': checkvalue(rows[i][17], 'string') !== undefined ? checkvalue(rows[i][17], 'string') : NULL_,// gfccp_order["refno"] !== undefined ? gfccp_order["refno"] : NULL_
+                                        'order_date': date_,
+                                        'order_category': OrderCategory_,
+                                        'servicetype': servicetype_,
+                                        'customer_no': customer_no_,
+                                        'customerID': CustomerID,
+                                        'row_type': 'normal',
+                                        'attach_file': fileName,
+                                        'attach_file_origin': attach_file_origin,
+                                        'roleid': roleid,
+                                        'approve_setting_id': req.body.approve_setting_id,
+                                        'approve_setting_version': req.body.approve_setting_version,                                
+                                        'createby': user_id,
+                                        'ordernumber': setordernumber_,
+                                        'ordernumber_running': (i-1),
+                                    }
+                                    //console.log( 'if ((rows[i][3] !== null) && (rows[i][3] !== จำนวนมัด)) {if (servicetype_ === Deposit' ) 
+                                    // console.log('in setimeout data_: ', data_)
+                                    let output_ = upload_add_order(data_, 'Deposit')
+                                //  }, 1000);      
+                                 //console.log('data_: ', data_) 
+                                //console.log('servicetype_: ', servicetype_)
                             }
-                            dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
-                                if (err) {
-                                    console.log('error: ', err)
-                                    res.json({ error: err })
-                                }
-                                else {
-                                    // console.log(result)
-                                }
-                            })
-                            console.log('data_: ', data_)
-                            //console.log('servicetype_: ', servicetype_)
-                        }
-                        if (servicetype_ === 'Withdraw') {
-                            data_ = {
-                                'branchorigin_code': gfc_cct_code,
-                                'branchorigin_name': gfc_cct,
-                                'branchdest_code': rows[i][2],
-                                'branchdest_name': rows[i][3],
-
-                                'note_new_1000': rows[i][4],
-                                'note_fit_1000': rows[i][5],
-                                'note_new_500': rows[i][6],
-                                'note_fit_500': rows[i][7],
-                                'note_new_100': rows[i][8],
-                                'note_fit_100': rows[i][9],
-                                'note_new_50': rows[i][10],
-                                'note_fit_50': rows[i][11],
-                                'note_new_20': rows[i][12],
-                                'note_fit_20': rows[i][13],
-                                'note_new_10': rows[i][14],
-                                'note_fit_10': rows[i][15],
-
-                                'pcs_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,//rows[i][4],
-                                'pcs_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '1000') : 0,//rows[i][5],
-                                'pcs_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '500') : 0,//rows[i][6],
-                                'pcs_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '500') : 0,//rows[i][7],
-                                'pcs_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '100') : 0,//rows[i][8],
-                                'pcs_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '100') : 0,//rows[i][9],
-                                'pcs_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '50') : 0,//rows[i][10],
-                                'pcs_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '50') : 0,//rows[i][11],
-                                'pcs_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '20') : 0,//rows[i][12],
-                                'pcs_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '20') : 0,//rows[i][13],
-                                'pcs_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '10') : 0,//rows[i][14],
-                                'pcs_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '10') : 0,//rows[i][15],                                
-
-                                'unit_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
-                                'unit_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
-                                'unit_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
-                                'unit_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
-                                'unit_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
-                                'unit_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
-                                'unit_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
-                                'unit_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
-                                'unit_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
-                                'unit_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
-                                'unit_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
-                                'unit_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
-
-                                'coin_fit_10': rows[i][16],
-                                'coin_fit_5': rows[i][17],
-                                'coin_fit_2': rows[i][18],
-                                'coin_fit_1': rows[i][19],
-                                'coin_fit_05': rows[i][20],
-                                'coin_fit_025': rows[i][21],
-
-                                'pcs_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? check_pcs(rows[i][16], '10') : 0, //rows[i][16],
-                                'pcs_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? check_pcs(rows[i][17], '5') : 0,//checkvalue(rows[i][17], 'float'),
-                                'pcs_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? check_pcs(rows[i][18], '2') : 0,//rows[i][18],
-                                'pcs_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? check_pcs(rows[i][19], '1') : 0,//rows[i][19],
-                                'pcs_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? check_pcs(rows[i][20], '0.50') : 0,//rows[i][20],
-                                'pcs_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? check_pcs(rows[i][21], '0.25') : 0,//rows[i][21],
-
-                                'unit_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? 'Bundle' : '',
-
-                                'total_by_branch': rows[i][22],
-                                // 'remark': checkvalue(rows[i][23], 'string'),
-                                'remark': checkvalue(rows[i][23], 'string') !== undefined ? checkvalue(rows[i][23], 'string') : NULL_,
-                                'order_date': date_,
-                                'order_category': OrderCategory_,
-                                'servicetype': servicetype_,
-                                'customer_no': customer_no_,
-                                'customerID': CustomerID,
-                                'row_type': 'normal',
-                                'attach_file': fileName,
-                                'attach_file_origin': attach_file_origin,
-                                'roleid': roleid,
-                                'approve_setting_id': req.body.approve_setting_id,
-                                'createby': user_id,
+                            if (servicetype_ === 'Withdraw') {     
+                                // dboperations.upload_add_order(data_, 'Withdraw').then((result, err) => {
+                                //     if (err) {
+                                //         console.log('error: ', err)
+                                //         res.json({ error: err })
+                                //     }
+                                //     else {
+                                //         // console.log(result)
+                                //     }
+                                // })
+                                // setTimeout(() => { 
+                                    data_ = null
+                                // let setordernumber_ = ''
+                                let setordernumber_ = setordernumber(i)
+                                    data_ = {
+                                        'branchorigin_code': gfc_cct_code,
+                                        'branchorigin_name': gfc_cct,
+                                        'branchdest_code': rows[i][2],
+                                        'branchdest_name': rows[i][3],
+        
+                                        'note_new_1000': rows[i][4],
+                                        'note_fit_1000': rows[i][5],
+                                        'note_new_500': rows[i][6],
+                                        'note_fit_500': rows[i][7],
+                                        'note_new_100': rows[i][8],
+                                        'note_fit_100': rows[i][9],
+                                        'note_new_50': rows[i][10],
+                                        'note_fit_50': rows[i][11],
+                                        'note_new_20': rows[i][12],
+                                        'note_fit_20': rows[i][13],
+                                        'note_new_10': rows[i][14],
+                                        'note_fit_10': rows[i][15],
+        
+                                        'pcs_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,//rows[i][4],
+                                        'pcs_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '1000') : 0,//rows[i][5],
+                                        'pcs_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '500') : 0,//rows[i][6],
+                                        'pcs_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '500') : 0,//rows[i][7],
+                                        'pcs_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '100') : 0,//rows[i][8],
+                                        'pcs_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '100') : 0,//rows[i][9],
+                                        'pcs_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '50') : 0,//rows[i][10],
+                                        'pcs_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '50') : 0,//rows[i][11],
+                                        'pcs_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '20') : 0,//rows[i][12],
+                                        'pcs_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '20') : 0,//rows[i][13],
+                                        'pcs_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '10') : 0,//rows[i][14],
+                                        'pcs_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '10') : 0,//rows[i][15],                                
+        
+                                        'unit_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
+                                        'unit_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
+                                        'unit_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
+                                        'unit_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
+                                        'unit_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
+                                        'unit_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
+                                        'unit_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
+        
+                                        'coin_fit_10': rows[i][16],
+                                        'coin_fit_5': rows[i][17],
+                                        'coin_fit_2': rows[i][18],
+                                        'coin_fit_1': rows[i][19],
+                                        'coin_fit_05': rows[i][20],
+                                        'coin_fit_025': rows[i][21],
+        
+                                        'pcs_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? check_pcs(rows[i][16], '10') : 0, //rows[i][16],
+                                        'pcs_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? check_pcs(rows[i][17], '5') : 0,//checkvalue(rows[i][17], 'float'),
+                                        'pcs_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? check_pcs(rows[i][18], '2') : 0,//rows[i][18],
+                                        'pcs_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? check_pcs(rows[i][19], '1') : 0,//rows[i][19],
+                                        'pcs_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? check_pcs(rows[i][20], '0.50') : 0,//rows[i][20],
+                                        'pcs_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? check_pcs(rows[i][21], '0.25') : 0,//rows[i][21],
+        
+                                        'unit_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? 'Bundle' : '',
+        
+                                        'total_by_branch': rows[i][22],
+                                        // 'remark': checkvalue(rows[i][23], 'string'),
+                                        'remark': checkvalue(rows[i][23], 'string') !== undefined ? checkvalue(rows[i][23], 'string') : NULL_,
+                                        'order_date': date_,
+                                        'order_category': OrderCategory_,
+                                        'servicetype': servicetype_,
+                                        'customer_no': customer_no_,
+                                        'customerID': CustomerID,
+                                        'row_type': 'normal',
+                                        'attach_file': fileName,
+                                        'attach_file_origin': attach_file_origin,
+                                        'roleid': roleid,
+                                        'approve_setting_id': req.body.approve_setting_id,
+                                        'approve_setting_version': req.body.approve_setting_version,
+                                        'createby': user_id,
+                                        'ordernumber': setordernumber_,
+                                        'ordernumber_running': (i-1),
+                                    }
+                                    let output_ = upload_add_order(data_, 'Withdraw')
+                                //  }, 1000);
+                                
+                                // console.log('data_: ', data_)
+                                // console.log('servicetype_: ', servicetype_)
                             }
-                            dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
-                                if (err) {
-                                    console.log('error: ', err)
-                                    res.json({ error: err })
-                                }
-                                else {
-                                    // console.log(result)
-                                }
-                            })
-                            console.log('data_: ', data_)
-                            // console.log('servicetype_: ', servicetype_)
-                        }
-                    }
-                }
-                if (rows[i][3] === 'ยอดรวม') {
-                    if (rows[i][3] !== null) {
-                        if (servicetype_ === 'Deposit') {
-                            data_ = {
-                                'branchorigin_code': rows[i][2],
-                                'branchorigin_name': rows[i][3],
-                                'branchdest_code': gfc_cct_code,
-                                'branchdest_name': gfc_cct,
-
-                                'note_uncount_1000': rows[i][4],
-                                'note_uncount_500': rows[i][5],
-                                'note_uncount_100': rows[i][6],
-                                'note_uncount_50': rows[i][7],
-                                'note_uncount_20': rows[i][8],
-                                'note_uncount_10': rows[i][9],
-
-                                'unit_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
-                                'unit_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
-
-                                'pcs_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,
-                                'pcs_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '500') : 0,//rows[i][5],
-                                'pcs_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '100') : 0,//rows[i][6],
-                                'pcs_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '50') : 0,//rows[i][7],
-                                'pcs_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '20') : 0,//rows[i][8],
-                                'pcs_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '10') : 0,//rows[i][9],
-
-                                'coin_fit_10': rows[i][10],
-                                'coin_fit_5': checkvalue(rows[i][11], 'float'),
-                                'coin_fit_2': rows[i][12],
-                                'coin_fit_1': rows[i][13],
-                                'coin_fit_05': rows[i][14],
-                                'coin_fit_025': rows[i][15],
-
-                                'unit_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
-
-                                'pcs_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '10') : 0, //rows[i][10],
-                                'pcs_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '5') : 0,//checkvalue(rows[i][11], 'float'),
-                                'pcs_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '2') : 0,//rows[i][12],
-                                'pcs_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '1') : 0,//rows[i][13],
-                                'pcs_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '0.50') : 0,//rows[i][14],
-                                'pcs_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '0.25') : 0,//rows[i][15],
-
-                                'total_by_branch': rows[i][16],
-                                'remark': checkvalue(rows[i][17], 'string') !== undefined ? checkvalue(rows[i][17], 'string') : NULL_,
-                                'order_date': date_,
-                                'order_category': OrderCategory_,
-                                'servicetype': servicetype_,
-                                'customer_no': customer_no_,
-                                'customerID': CustomerID,
-                                'row_type': 'summary',
-                                'attach_file': fileName,
-                                'attach_file_origin': attach_file_origin,
-                                'roleid': roleid,
-                                'createby': user_id,
-                            }
-                            dboperations.manual_add_order(data_, 'Deposit').then((result, err) => {
-                                if (err) {
-                                    console.log('error: ', err)
-                                    res.json({ error: err })
-                                }
-                                else {
-                                    // console.log(result)
-                                }
-                            })
-                            console.log('data_: ', data_)
-                            //console.log('servicetype_: ', servicetype_)
-                        }
-                        if (servicetype_ === 'Withdraw') {
-                            data_ = {
-                                'branchorigin_code': gfc_cct_code,
-                                'branchorigin_name': gfc_cct,
-                                'branchdest_code': rows[i][2],
-                                'branchdest_name': rows[i][3],
-
-                                'note_new_1000': rows[i][4],
-                                'note_fit_1000': rows[i][5],
-                                'note_new_500': rows[i][6],
-                                'note_fit_500': rows[i][7],
-                                'note_new_100': rows[i][8],
-                                'note_fit_100': rows[i][9],
-                                'note_new_50': rows[i][10],
-                                'note_fit_50': rows[i][11],
-                                'note_new_20': rows[i][12],
-                                'note_fit_20': rows[i][13],
-                                'note_new_10': rows[i][14],
-                                'note_fit_10': rows[i][15],
-
-                                'pcs_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,//rows[i][4],
-                                'pcs_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '1000') : 0,//rows[i][5],
-                                'pcs_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '500') : 0,//rows[i][6],
-                                'pcs_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '500') : 0,//rows[i][7],
-                                'pcs_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '100') : 0,//rows[i][8],
-                                'pcs_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '100') : 0,//rows[i][9],
-                                'pcs_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '50') : 0,//rows[i][10],
-                                'pcs_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '50') : 0,//rows[i][11],
-                                'pcs_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '20') : 0,//rows[i][12],
-                                'pcs_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '20') : 0,//rows[i][13],
-                                'pcs_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '10') : 0,//rows[i][14],
-                                'pcs_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '10') : 0,//rows[i][15],                                
-
-                                'unit_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
-                                'unit_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
-                                'unit_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
-                                'unit_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
-                                'unit_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
-                                'unit_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
-                                'unit_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
-                                'unit_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
-                                'unit_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
-                                'unit_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
-                                'unit_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
-                                'unit_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
-
-                                'coin_fit_10': rows[i][16],
-                                'coin_fit_5': rows[i][17],
-                                'coin_fit_2': rows[i][18],
-                                'coin_fit_1': rows[i][19],
-                                'coin_fit_05': rows[i][20],
-                                'coin_fit_025': rows[i][21],
-
-                                'pcs_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? check_pcs(rows[i][16], '10') : null, //rows[i][16],
-                                'pcs_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? check_pcs(rows[i][17], '5') : null,//checkvalue(rows[i][17], 'float'),
-                                'pcs_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? check_pcs(rows[i][18], '2') : null,//rows[i][18],
-                                'pcs_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? check_pcs(rows[i][19], '1') : null,//rows[i][19],
-                                'pcs_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? check_pcs(rows[i][20], '0.50') : null,//rows[i][20],
-                                'pcs_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? check_pcs(rows[i][21], '0.25') : null,//rows[i][21],
-
-                                'unit_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? 'Bundle' : '',
-                                'unit_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? 'Bundle' : '',
-
-                                'total_by_branch': rows[i][22],
-                                // 'remark': checkvalue(rows[i][23], 'string'),
-                                'remark': checkvalue(rows[i][23], 'string') !== undefined ? checkvalue(rows[i][23], 'string') : NULL_,
-                                'order_date': date_,
-                                'order_category': OrderCategory_,
-                                'servicetype': servicetype_,
-                                'customer_no': customer_no_,
-                                'customerID': CustomerID,
-                                'row_type': 'summary',
-                                'attach_file': fileName,
-                                'attach_file_origin': attach_file_origin,
-                                'roleid': roleid,
-                                'createby': user_id,
-                            }
-
-                            dboperations.manual_add_order(data_, 'Withdraw').then((result, err) => {
-                                if (err) {
-                                    console.log('error: ', err)
-                                    res.json({ error: err })
-                                }
-                                else {
-                                    // console.log(result)
-                                }
-                            })
-
-
-                            console.log('data_: ', data_)
-                            //console.log('servicetype_: ', servicetype_)
                         }
                     }
+                    if (rows[i][3] === 'ยอดรวม') {
+                        if (rows[i][3] !== null) {
+                            if (servicetype_ === 'Deposit') { 
+                                data_ = null     
+                                // let setordernumber_ = ''
+                                let setordernumber_ = setordernumber(i)      
+                                // console.log('setordernumber_: ',setordernumber_)                
+                                // setTimeout(() => { 
+                                    data_ = {
+                                        'branchorigin_code': rows[i][2],
+                                        'branchorigin_name': rows[i][3],
+                                        'branchdest_code': gfc_cct_code,
+                                        'branchdest_name': gfc_cct,
+            
+                                        'note_uncount_1000': rows[i][4],
+                                        'note_uncount_500': rows[i][5],
+                                        'note_uncount_100': rows[i][6],
+                                        'note_uncount_50': rows[i][7],
+                                        'note_uncount_20': rows[i][8],
+                                        'note_uncount_10': rows[i][9],
+            
+                                        'unit_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
+                                        'unit_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
+            
+                                        'pcs_note_uncount_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,
+                                        'pcs_note_uncount_500': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '500') : 0,//rows[i][5],
+                                        'pcs_note_uncount_100': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '100') : 0,//rows[i][6],
+                                        'pcs_note_uncount_50': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '50') : 0,//rows[i][7],
+                                        'pcs_note_uncount_20': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '20') : 0,//rows[i][8],
+                                        'pcs_note_uncount_10': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '10') : 0,//rows[i][9],
+            
+                                        'coin_fit_10': rows[i][10],
+                                        'coin_fit_5': checkvalue(rows[i][11], 'float'),
+                                        'coin_fit_2': rows[i][12],
+                                        'coin_fit_1': rows[i][13],
+                                        'coin_fit_05': rows[i][14],
+                                        'coin_fit_025': rows[i][15],
+            
+                                        'unit_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
+                                        'unit_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
+            
+                                        'pcs_coin_fit_10': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '10') : 0, //rows[i][10],
+                                        'pcs_coin_fit_5': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '5') : 0,//checkvalue(rows[i][11], 'float'),
+                                        'pcs_coin_fit_2': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '2') : 0,//rows[i][12],
+                                        'pcs_coin_fit_1': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '1') : 0,//rows[i][13],
+                                        'pcs_coin_fit_05': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '0.50') : 0,//rows[i][14],
+                                        'pcs_coin_fit_025': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '0.25') : 0,//rows[i][15],
+            
+                                        'total_by_branch': rows[i][16],
+                                        'remark': checkvalue(rows[i][17], 'string') !== undefined ? checkvalue(rows[i][17], 'string') : NULL_,
+                                        'order_date': date_,
+                                        'order_category': OrderCategory_,
+                                        'servicetype': servicetype_,
+                                        'customer_no': customer_no_,
+                                        'customerID': CustomerID,
+                                        'row_type': 'summary',
+                                        'attach_file': fileName,
+                                        'attach_file_origin': attach_file_origin,
+                                        'roleid': roleid,
+                                        'createby': user_id,
+                                        'ordernumber': setordernumber_,
+                                        'ordernumber_running': (i-1),
+                                        } 
+                                     let output_ = upload_add_order(data_, 'Deposit')
+                                     //console.log('if (rows[i][3] === ยอดรวม) {')
+                                    //  console.log('in setimeout data_: ', data_)
+                                //   }, 1000); 
+    
+                                // dboperations.upload_add_order(data_, 'Deposit').then((result, err) => {
+                                //     if (err) {
+                                //         console.log('error: ', err)
+                                //         res.json({ error: err })
+                                //     }
+                                //     else {
+                                //         // console.log(result)
+                                //     }
+                                // })
+                                // console.log('data_: ', data_)
+                                //console.log('servicetype_: ', servicetype_)
+                            }
+                            if (servicetype_ === 'Withdraw') { 
+                                // setTimeout(() => {
+                                    data_ = null
+                                // let setordernumber_ = ''
+                                let setordernumber_ = setordernumber(i)
+                                    data_ = {
+                                    'branchorigin_code': gfc_cct_code,
+                                    'branchorigin_name': gfc_cct,
+                                    'branchdest_code': rows[i][2],
+                                    'branchdest_name': rows[i][3],
+    
+                                    'note_new_1000': rows[i][4],
+                                    'note_fit_1000': rows[i][5],
+                                    'note_new_500': rows[i][6],
+                                    'note_fit_500': rows[i][7],
+                                    'note_new_100': rows[i][8],
+                                    'note_fit_100': rows[i][9],
+                                    'note_new_50': rows[i][10],
+                                    'note_fit_50': rows[i][11],
+                                    'note_new_20': rows[i][12],
+                                    'note_fit_20': rows[i][13],
+                                    'note_new_10': rows[i][14],
+                                    'note_fit_10': rows[i][15],
+    
+                                    'pcs_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? check_pcs(rows[i][4], '1000') : 0,//rows[i][4],
+                                    'pcs_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? check_pcs(rows[i][5], '1000') : 0,//rows[i][5],
+                                    'pcs_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? check_pcs(rows[i][6], '500') : 0,//rows[i][6],
+                                    'pcs_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? check_pcs(rows[i][7], '500') : 0,//rows[i][7],
+                                    'pcs_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? check_pcs(rows[i][8], '100') : 0,//rows[i][8],
+                                    'pcs_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? check_pcs(rows[i][9], '100') : 0,//rows[i][9],
+                                    'pcs_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? check_pcs(rows[i][10], '50') : 0,//rows[i][10],
+                                    'pcs_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? check_pcs(rows[i][11], '50') : 0,//rows[i][11],
+                                    'pcs_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? check_pcs(rows[i][12], '20') : 0,//rows[i][12],
+                                    'pcs_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? check_pcs(rows[i][13], '20') : 0,//rows[i][13],
+                                    'pcs_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? check_pcs(rows[i][14], '10') : 0,//rows[i][14],
+                                    'pcs_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? check_pcs(rows[i][15], '10') : 0,//rows[i][15],                                
+    
+                                    'unit_note_new_1000': rows[i][4] !== '' && rows[i][4] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_1000': rows[i][5] !== '' && rows[i][5] !== null ? 'Bundle' : '',
+                                    'unit_note_new_500': rows[i][6] !== '' && rows[i][6] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_500': rows[i][7] !== '' && rows[i][7] !== null ? 'Bundle' : '',
+                                    'unit_note_new_100': rows[i][8] !== '' && rows[i][8] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_100': rows[i][9] !== '' && rows[i][9] !== null ? 'Bundle' : '',
+                                    'unit_note_new_50': rows[i][10] !== '' && rows[i][10] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_50': rows[i][11] !== '' && rows[i][11] !== null ? 'Bundle' : '',
+                                    'unit_note_new_20': rows[i][12] !== '' && rows[i][12] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_20': rows[i][13] !== '' && rows[i][13] !== null ? 'Bundle' : '',
+                                    'unit_note_new_10': rows[i][14] !== '' && rows[i][14] !== null ? 'Bundle' : '',
+                                    'unit_note_fit_10': rows[i][15] !== '' && rows[i][15] !== null ? 'Bundle' : '',
+    
+                                    'coin_fit_10': rows[i][16],
+                                    'coin_fit_5': rows[i][17],
+                                    'coin_fit_2': rows[i][18],
+                                    'coin_fit_1': rows[i][19],
+                                    'coin_fit_05': rows[i][20],
+                                    'coin_fit_025': rows[i][21],
+    
+                                    'pcs_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? check_pcs(rows[i][16], '10') : null, //rows[i][16],
+                                    'pcs_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? check_pcs(rows[i][17], '5') : null,//checkvalue(rows[i][17], 'float'),
+                                    'pcs_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? check_pcs(rows[i][18], '2') : null,//rows[i][18],
+                                    'pcs_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? check_pcs(rows[i][19], '1') : null,//rows[i][19],
+                                    'pcs_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? check_pcs(rows[i][20], '0.50') : null,//rows[i][20],
+                                    'pcs_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? check_pcs(rows[i][21], '0.25') : null,//rows[i][21],
+    
+                                    'unit_coin_fit_10': rows[i][16] !== '' && rows[i][16] !== null ? 'Bundle' : '',
+                                    'unit_coin_fit_5': rows[i][17] !== '' && rows[i][17] !== null ? 'Bundle' : '',
+                                    'unit_coin_fit_2': rows[i][18] !== '' && rows[i][18] !== null ? 'Bundle' : '',
+                                    'unit_coin_fit_1': rows[i][19] !== '' && rows[i][19] !== null ? 'Bundle' : '',
+                                    'unit_coin_fit_05': rows[i][20] !== '' && rows[i][20] !== null ? 'Bundle' : '',
+                                    'unit_coin_fit_025': rows[i][21] !== '' && rows[i][21] !== null ? 'Bundle' : '',
+    
+                                    'total_by_branch': rows[i][22],
+                                    // 'remark': checkvalue(rows[i][23], 'string'),
+                                    'remark': checkvalue(rows[i][23], 'string') !== undefined ? checkvalue(rows[i][23], 'string') : NULL_,
+                                    'order_date': date_,
+                                    'order_category': OrderCategory_,
+                                    'servicetype': servicetype_,
+                                    'customer_no': customer_no_,
+                                    'customerID': CustomerID,
+                                    'row_type': 'summary',
+                                    'attach_file': fileName,
+                                    'attach_file_origin': attach_file_origin,
+                                    'roleid': roleid,
+                                    'createby': user_id,
+                                    'ordernumber': setordernumber_,
+                                    'ordernumber_running': (i-1),
+                                    }
+                                // dboperations.upload_add_order(data_, 'Withdraw').then((result, err) => {
+                                //     if (err) {
+                                //         console.log('error: ', err)
+                                //         res.json({ error: err })
+                                //     }
+                                //     else {
+                                //         // console.log(result)
+                                //     }
+                                // })
+                                 
+                                     //let output_ = upload_add_order(data_, 'Withdraw')
+                                // }, 1000);                            
+                                // console.log('data_: ', data_)
+                                //console.log('servicetype_: ', servicetype_)
+                            }
+                        }
+                    }
+                    //console.log(rows[i][16])
                 }
-                //console.log(rows[i][16])
-            }
+            // }, 500); 
         }
     })
 })
@@ -507,7 +758,7 @@ app.post("/generateCSV", urlencodedParser, async (req, res) => {
     let data_ = obj_json['data_'].split(':')
     console.log('obj_json: ', obj_json)
     let customer = ''
-    customer = checkcustomer( obj_json['customerID'] )
+    customer = checkcustomer(obj_json['customerID'])
     // obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
@@ -582,7 +833,7 @@ app.post('/checkUser', urlencodedParser, (req, res) => {
     }
 
 })
-app.post("/gettemplatefile", urlencodedParser, async (req, res) => { 
+app.post("/gettemplatefile", urlencodedParser, async (req, res) => {
     let data = req.body
     let obj = null
     for (let x in data) {
@@ -590,17 +841,17 @@ app.post("/gettemplatefile", urlencodedParser, async (req, res) => {
     }
     let obj_json = JSON.parse(obj)
     let filename = ''
-    console.log('obj_json[type]: ',obj_json['type'])
+    console.log('obj_json[type]: ', obj_json['type'])
     obj_json['type'] === 'Deposit' ? filename = 'BranchtoCCTTemplate_deposit.xls' : filename = 'CCTToBranchTemplate_withdraw.xls'
 
-    var file = __dirname + '/template/'+filename
+    var file = __dirname + '/template/' + filename
     console.log('file: ', file)
     res.setHeader("Content-Type", "application/vnd.ms-excel; charset=Windows-874;")
     res.setHeader('Content-Disposition', contentDisposition(file))
     var filestream = fs.createReadStream(file);
     console.log('res: ', res)
     filestream.pipe(res);
-    onFinished(res, () => { 
+    onFinished(res, () => {
         destroy(filestream)
     })
 })
@@ -617,7 +868,7 @@ app.post("/generateXLS", urlencodedParser, async (req, res) => {
     console.log('obj_json: ', obj_json)
     let customer = ''
     //obj_json['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
-    customer = checkcustomer( obj_json['customerID'] )
+    customer = checkcustomer(obj_json['customerID'])
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
     var file = __dirname + '/reports/' + data_[0] + '/' + data_[1] + '/' + customer + '/' + data_[2] + '/' + data_[4]
@@ -661,17 +912,17 @@ app.get('/getdownloadreports', urlencodedParser, async (req, res) => {
     var output_data0 = {}
     let customer = ''
     //req.query['customerID'] === '2c164463-ef08-4cb6-a200-08e70aece9ae' ? customer = 'GSB' : customer = 'UOB'
-    customer = checkcustomer( req.query['customerID'] )
+    customer = checkcustomer(req.query['customerID'])
     var path = req.query['JobDate'] + '/' + req.query['CCT_Data']
         + '/' + customer
     var dir_ = {}
-    var path_ = ""  
+    var path_ = ""
     try {
         await client.access({
             host: "192.168.100.94",
             port: 21,
             user: "svc-ftp-std",
-            password: "mnP9eFP8", 
+            password: "mnP9eFP8",
             secure: false
         })
         dir_ = await client.list(path)
@@ -878,27 +1129,27 @@ app.get('/getbranchforcash', urlencodedParser, (req, res) => {
     })
 
 })
-app.get('/orderlist', urlencodedParser, (req, res) => { 
+app.get('/orderlist', urlencodedParser, (req, res) => {
     console.log('/orderlist req.query[RoleId]: ', req.query['RoleId']
-    , 'req.query[CustomerID]: ', req.query['CustomerID']
-    , 'req.query[user_id]: ', req.query['user_id']
-    , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
-    , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
+        , 'req.query[CustomerID]: ', req.query['CustomerID']
+        , 'req.query[user_id]: ', req.query['user_id']
+        , 'req.query[approve_setting_id]: ', req.query['approve_setting_id']
+        , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
     )
     //dboperations.getOrdersList(req.query['user_id'], req.query['CustomerID'], req.query['approve_setting_id'], req.query['approve_setting_version'] ).then((result, err) => {
     dboperations.getOrdersList(req.query['RoleId']
-    , req.query['CustomerID']
-    , req.query['user_id']
-    , req.query['approve_setting_id']
-    , req.query['approve_setting_version']).then((result, err) => {
-        if (err) {
-            console.log('error: ', err)
-            res.json({ error: err })
-        }
-        else {
-            res.json(result[0])
-        }
-    }) 
+        , req.query['CustomerID']
+        , req.query['user_id']
+        , req.query['approve_setting_id']
+        , req.query['approve_setting_version']).then((result, err) => {
+            if (err) {
+                console.log('error: ', err)
+                res.json({ error: err })
+            }
+            else {
+                res.json(result[0])
+            }
+        })
 })
 // app.get('/getcctbranch', urlencodedParser, (req, res) => {  
 //     dboperations.getCashCenterData( req.query['CustomerID']  ).then((result, err) => {
@@ -915,23 +1166,23 @@ app.get('/approvelist', urlencodedParser, (req, res) => {
         console.log('req.query[RoleId]: ', req.query['RoleId']
             , 'req.query[CustomerID]: ', req.query['CustomerID']
             , 'req.query[user_id]: ', req.query['user_id']
-            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
+            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id']
             , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
-            )
+        )
         dboperations.getApproveList(req.query['RoleId']
             , req.query['CustomerID']
             , req.query['user_id']
             , req.query['approve_setting_id']
             , req.query['approve_setting_version']
-            ).then((result, err) => {
-                if (err) {
-                    console.log('error: ', err)
-                    res.json({ error: err })
-                }
-                else {
-                    res.json(result[0])
-                }
-            })
+        ).then((result, err) => {
+            if (err) {
+                console.log('error: ', err)
+                res.json({ error: err })
+            }
+            else {
+                res.json(result[0])
+            }
+        })
     } catch (error) {
         res.json({ error: error })
         console.error(error)
@@ -945,23 +1196,23 @@ app.get('/approvenlist', urlencodedParser, (req, res) => {
         console.log('req.query[RoleId]: ', req.query['RoleId']
             , 'req.query[CustomerID]: ', req.query['CustomerID']
             , 'req.query[user_id]: ', req.query['user_id']
-            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id'] 
+            , 'req.query[approve_setting_id]: ', req.query['approve_setting_id']
             , 'req.query[approve_setting_version]: ', req.query['approve_setting_version']
-            )
+        )
         dboperations.getApproveNList(req.query['RoleId']
             , req.query['CustomerID']
             , req.query['user_id']
             , req.query['approve_setting_id']
             , req.query['approve_setting_version']
-            ).then((result, err) => {
-                if (err) {
-                    console.log('error: ', err)
-                    res.json({ error: err })
-                }
-                else {
-                    res.json(result[0])
-                }
-            })
+        ).then((result, err) => {
+            if (err) {
+                console.log('error: ', err)
+                res.json({ error: err })
+            }
+            else {
+                res.json(result[0])
+            }
+        })
     } catch (error) {
         res.json({ error: error })
         console.error(error)
@@ -1747,24 +1998,24 @@ app.get('/getcashorder', urlencodedParser, (req, res) => {
     })
 })
 app.get('/update_cashstatus_order_all', urlencodedParser, (req, res) => {
-     console.log('update_cashstatus_order_all req.query[Id]:',req.query['Id'])
-     console.log('update_cashstatus_order_all req.query[Id].length:',req.query['Id'].length)
-     console.log('update_cashstatus_order_all req.query[Type_]:',req.query['Type_'])    
-     let output = null
-     req.query['Id'].forEach( (item) => {
-       // console.log(item)
-        console.log('update_cashstatus_order_all in array Id: ',parseInt( item ) )     
-        dboperations.update_cashstatus_order(parseInt( item ), req.query['Type_'], req.query['user_id']).then((result, err) => {
+    console.log('update_cashstatus_order_all req.query[Id]:', req.query['Id'])
+    console.log('update_cashstatus_order_all req.query[Id].length:', req.query['Id'].length)
+    console.log('update_cashstatus_order_all req.query[Type_]:', req.query['Type_'])
+    let output = null
+    req.query['Id'].forEach((item) => {
+        // console.log(item)
+        console.log('update_cashstatus_order_all in array Id: ', parseInt(item))
+        dboperations.update_cashstatus_order(parseInt(item), req.query['Type_'], req.query['user_id']).then((result, err) => {
             if (err) {
                 console.log('error: ', err)
             }
             else {
-               // res.json(result[0])
-               output = result[0]
+                // res.json(result[0])
+                output = result[0]
             }
         })
-      } )
-      res.json( output )
+    })
+    res.json(output)
     // dboperations.update_cashstatus_order(req.query['Id'], req.query['Type_'], req.query['user_id']).then((result, err) => {
     //     if (err) {
     //         console.log('error: ', err)
