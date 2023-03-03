@@ -56,11 +56,12 @@ async function getuserEdit(userID, customerID) {
 async function get_pbi_url(pagename, CustomerID) {
     try {
         let pool = await sql.connect(config);
-        let T_Graph_Info = await pool.request()
+        let spGet_pbi_url = await pool.request()
             .input('CustomerID', sql.NVarChar, CustomerID)
             .input('pagename', sql.NVarChar, pagename)
-            .query("SELECT top 1 pbi_url from T_Graph_Info where CustomerID = @CustomerID and pagename = @pagename and [Status]='1' ");
-        return T_Graph_Info.recordsets;
+            .execute("spGet_pbi_url");
+            // .query("SELECT top 1 pbi_url from T_Graph_Info where CustomerID = @CustomerID and pagename = @pagename and [Status]='1' ");
+        return spGet_pbi_url.recordsets;
 
     }
     catch (error) {
@@ -385,10 +386,11 @@ async function getOrder(orderId) {
 async function getCashOrder(Id) {
     try {
         let pool = await sql.connect(config);
-        let product = await pool.request()
+        let spGetCashOrder = await pool.request()
             .input('input_id', sql.Int, Id)
-            .query("select * from [dbo].[gfccp_order] where AutoID = @input_id");
-        return product.recordsets;
+            // .query("select * from [dbo].[gfccp_order] where AutoID = @input_id");
+            .execute("spGetCashOrder");
+        return spGetCashOrder.recordsets;
 
     }
     catch (error) {
@@ -643,7 +645,6 @@ async function checkUser(data_all) {
         let spCheckUser = await pool.request()
             .input('username', sql.NVarChar, jobid)
             .input('password', sql.NVarChar, password)
-            //.query("SELECT * from users where username = @username and password = @password");
             .execute('spCheckUser');
         return spCheckUser.recordsets;
     }

@@ -1986,7 +1986,7 @@ app.post('/edit_approveproc', urlencodedParser, (req, res) => {
 app.get('/getcashorder', urlencodedParser, (req, res) => {
     //let data_ = req.query    
     // let Id = req.query['Id'] 
-    // console.log(req.query['Id'])
+     console.log('/getcashorder req.query[Id] :',req.query['Id'])
     dboperations.getCashOrder(req.query['Id']).then((result, err) => {
         if (err) {
             console.log('error: ', err)
