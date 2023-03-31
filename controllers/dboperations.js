@@ -1,6 +1,25 @@
 var config = require('../server/dbconfig');
 const sql = require('mssql');
 
+async function getOrder_status(user_id,customerID,orderId,activity_type,service_type) {
+   
+    //service_type:Deposit,Withdraw
+    try {
+        let pool = await sql.connect(config);
+        let spGetOrder_status = await pool.request()
+            .input('user_id', sql.Int, user_id)
+            .input('customerID', sql.NVarChar, customerID)
+            .input('orderId', sql.Int, orderId)
+            .input('activity_type', sql.NVarChar, activity_type)
+            .input('service_type', sql.NVarChar, service_type)
+            .execute("spGetOrder_status");
+        return spGetOrder_status.recordsets;
+    }
+    catch (error) {
+        console.log('error: ', error)
+        return ([{ error: error }]);
+    }
+}
 async function get_permission_access(RoleId) {
     console.log('set_cancel_approve_proc_data Id: ',RoleId)
     try {
@@ -211,11 +230,13 @@ async function getActitySelectd(user_id, CustomerID) {
         return ([{ error: error }]);
     }
 }
-async function getBOT_Branch(user_id) {
+async function getBOT_Branch(user_id,CustomerID) {
     try {
+        console.log('getBOT_Branch user_id :',user_id)
+        console.log('getBOT_Branch CustomerID :',CustomerID)
         let pool = await sql.connect(config);
         let spBOT_Branch = await pool.request()
-            .input('CustomerID', sql.NVarChar, '1493f524-c52e-4c06-aee8-8ef962929242')
+            .input('CustomerID', sql.NVarChar, CustomerID)
             .input('user_id', sql.Int, user_id)
             .execute("spBOT_Branch");
         return spBOT_Branch.recordsets;
@@ -1518,6 +1539,7 @@ async function update_cashstatus_order(Id, Type_, user_id) {
     }
 }
 module.exports = { 
+    getOrder_status : getOrder_status,
     get_permission_access : get_permission_access,
     set_cancel_approve_proc_data: set_cancel_approve_proc_data,
     getApproveNList: getApproveNList,

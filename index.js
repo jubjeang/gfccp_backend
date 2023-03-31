@@ -748,6 +748,32 @@ app.get('/ordertrackinglist', (req, res) => {
 // create application/x-www-form-urlencoded parser
 var bodyParser = require('body-parser');
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
+app.get('/getOrder_status', urlencodedParser, (req, res) => {  
+    // console.log('/getOrder_status req: ', req)
+    console.log('/getOrder_status user_id: ', req.query['user_id'])
+    console.log('/getOrder_status customerID:', req.query['customerID'])
+    console.log('/getOrder_status orderId:', req.query['orderId'])
+    console.log('/getOrder_status activity_type:', req.query['activity_type'])
+    console.log('/getOrder_status service_type:', req.query['service_type'])
+        //activity_type:BankBranch,BOT
+    //service_type:Deposit,Withdraw  
+
+    dboperations.getOrder_status(req.query['user_id'],
+    req.query['customerID'],
+    req.query['orderId'],
+    req.query['activity_type'],
+    req.query['service_type']
+    ).then((result, err) => {
+        if (err) {
+            console.log('error: ', err)
+            res.json({ error: err })
+        }
+        else {
+            res.json(result[0])
+        }
+    })
+})
 app.get('/get_permission_access', urlencodedParser, (req, res) => {
     // let type_ = ''
     // type_ = req.query['type_']
@@ -1111,7 +1137,7 @@ app.get('/getcashcenterdata', urlencodedParser, (req, res) => {
     }
 })
 app.get('/getbotbranch', urlencodedParser, (req, res) => {
-    dboperations.getBOT_Branch(req.query['user_id']).then((result, err) => {
+    dboperations.getBOT_Branch(req.query['user_id'],req.query['CustomerID']).then((result, err) => {
         if (err) {
             console.log('error: ', err)
             res.json({ error: err })
